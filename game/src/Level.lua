@@ -19,7 +19,12 @@ local pieceTypes = {
 }
 
 -- 初期化
-function Level:initialize(spriteSheet)
+function Level:initialize(spriteSheet, width, height)
+    -- レベルのサイズ
+    local w, h = lg.getDimensions()
+    self.width = width or w
+    self.height = height or h
+
     -- スプライトシート
     self.spriteSheet = spriteSheet
 
@@ -32,24 +37,33 @@ end
 
 -- 読み込み
 function Level:load(numHorizontal, numVertical)
-    numHorizontal = numHorizontal or 20
-    numVertical = numVertical or 10
+    self.numHorizontal = numHorizontal or 20
+    self.numVertical = numVertical or 10
+
+    -- 駒のサイズ
+    local pw = math.ceil(self.width / self.numHorizontal)
+    local ph = math.ceil(self.height / self.numVertical)
+    if pw < ph then
+        ph = pw
+    elseif ph < pw then
+        pw = ph
+    end
 
     -- 駒のリセット
     self.pieces = {}
 
     -- 駒のランダム配置
-    for i = 1, numHorizontal do
+    for i = 1, self.numHorizontal do
         local line = {}
-        for j = 1, numVertical do
+        for j = 1, self.numVertical do
             local pieceType = pieceTypes[love.math.random(#pieceTypes)]
             table.insert(
                 line,
                 Piece {
-                    x = i * 32,
-                    y = j * 32,
-                    width = 32,
-                    height = 32,
+                    x = (i - 1) * pw,
+                    y = (j - 1) * ph,
+                    width = pw,
+                    height = ph,
                     type = pieceType.name,
                     spriteSheet = self.spriteSheet,
                     spriteName = pieceType.spriteName,
