@@ -10,6 +10,7 @@ local lg = love.graphics
 -- レベル
 local Level = class 'Level'
 
+-- 駒のタイプ
 local pieceTypes = {
     { name = 'rabbit', spriteName = 'rabbit.png' },
     { name = 'duck', spriteName = 'duck.png' },
@@ -17,6 +18,21 @@ local pieceTypes = {
     { name = 'monkey', spriteName = 'monkey.png' },
     { name = 'giraffe', spriteName = 'giraffe.png' },
 }
+
+-- 連結
+local function concat(...)
+    local result = {}
+    for i = 1, select('#', ...) do
+        local t = select(i, ...)
+        if t ~= nil then
+            local iter = t[1] ~= nil and ipairs or pairs
+            for _, v in iter(t) do
+                result[#result + 1] = v
+            end
+        end
+    end
+    return result
+end
 
 -- 初期化
 function Level:initialize(spriteSheet, x, y, width, height)
@@ -118,7 +134,8 @@ end
 function Level:mousepressed(x, y, button, istouch, presses)
     local px = math.ceil((x - self.x) / self.pieceWidth)
     local py = self.numVertical - math.ceil((y - self.y) / self.pieceHeight) + 1
-    self:removePiece(px, py)
+    print('----------')
+    self:removeSamePieces(px, py)
 end
 
 -- デバッグモードの設定
@@ -141,9 +158,30 @@ function Level:totalSize()
     return self:totalWidth(), self:totalHeight()
 end
 
+-- 駒の取得
+function Level:getPiece(x, y, type)
+    local piece
+    if x <= 0 or x > #self.pieces then
+        -- 範囲外
+    elseif y <= 0 then
+        -- 範囲外
+    else
+        local line = self.pieces[x]
+        if line == nil then
+            -- 範囲外
+        elseif y > #line then
+            -- 範囲外
+        elseif type and line[y].type ~= type then
+            -- タイプ不一致
+        else
+            piece = line[y]
+        end
+    end
+    return piece
+end
+
 -- 駒を取り除く
 function Level:removePiece(x, y)
-    print(x, y)
     if x <= 0 or x > #self.pieces then
         -- 範囲外
     elseif y <= 0 then
@@ -159,6 +197,53 @@ function Level:removePiece(x, y)
         end
         if #line == 0 then
             table.remove(self.pieces, x)
+        end
+    end
+end
+
+-- 同じタイプの駒の取得
+function Level:pickSamePieceCoords(x, y, type, dirX, dirY)
+    --print('pickSamePieceCoords', x, y, type, dirX, dirY)
+    local coords = {}
+    local piece = self:getPiece(x, y, type)
+    if piece == nil then
+        -- 範囲外
+    else
+        table.insert(coords, { x, y })
+        if dirX ~= 'left' then
+            coords = concat(coords, self:pickSamePieceCoords(x - 1, y, piece.type, 'right', dirY))
+        end
+        if dirX ~= 'right' then
+            coords = concat(coords, self:pickSamePieceCoords(x + 1, y, piece.type, 'left', dirY))
+        end
+        if dirY ~= 'up' then
+            coords = concat(coords, self:pickSamePieceCoords(x, y - 1, piece.type, dirX, 'down'))
+        end
+        if dirY ~= 'down' then
+            coords = concat(coords, self:pickSamePieceCoords(x, y + 1, piece.type, dirX, 'up'))
+        end
+    end
+    return coords
+end
+
+-- 同じタイプの駒の除外
+function Level:removeSamePieces(x, y)
+    local coords = self:pickSamePieceCoords(x, y)
+    if #coords > 1 then
+        table.sort(
+            coords,
+            function (a, b)
+                if a[1] ~= b[1] then
+                    return a[1] > b[1]
+                else
+                    return a[2] > b[2]
+                end
+            end
+        )
+        print('----------')
+        for _, coord in ipairs(coords) do
+            print(unpack(coord))
+            self:removePiece(unpack(coord))
         end
     end
 end
