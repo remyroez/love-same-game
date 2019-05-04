@@ -79,6 +79,7 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
     self.pieces = {}
     self.lastEnviroments = {}
     self.score = 0
+    self.lastScores = {}
 
     -- 駒タイプが空なら終了
     if #self.pieceTypes == 0 then
@@ -90,10 +91,6 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
         local line = {}
         for j = 1, self.numVertical do
             local pieceType = self.pieceTypes[love.math.random(#self.pieceTypes)]
-            if self.counts[pieceType.name] == nil then
-                self.counts[pieceType.name] = 0
-            end
-            self.counts[pieceType.name] = self.counts[pieceType.name] + 1
             table.insert(
                 line,
                 Piece {
@@ -107,6 +104,9 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
         end
         table.insert(self.pieces, line)
     end
+
+    -- 駒のタイプのカウント
+    self:countPieceTypes()
 end
 
 -- 破棄
@@ -315,6 +315,9 @@ function Level:removeSamePieces(x, y, save)
 
         -- スコア獲得
         self:scorePieces(#coords)
+
+        -- 駒のタイプのカウント
+        self:countPieceTypes()
     end
 end
 
@@ -333,6 +336,9 @@ function Level:undo()
     else
         self.pieces = table.remove(self.lastEnviroments)
         self.score = table.remove(self.lastScores)
+
+        -- 駒のタイプのカウント
+        self:countPieceTypes()
     end
 end
 
@@ -347,6 +353,22 @@ function Level:undoAll()
         self.lastEnviroments = {}
         self.score = 0
         self.lastScores = {}
+
+        -- 駒のタイプのカウント
+        self:countPieceTypes()
+    end
+end
+
+-- 駒のタイプをカウントする
+function Level:countPieceTypes()
+    self.counts = {}
+    for i, line in ipairs(self.pieces) do
+        for j, piece in ipairs(line) do
+            if self.counts[piece.type] == nil then
+                self.counts[piece.type] = 0
+            end
+            self.counts[piece.type] = self.counts[piece.type] + 1
+        end
     end
 end
 

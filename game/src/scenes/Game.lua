@@ -53,6 +53,17 @@ function Game:draw()
     self.state.level:draw()
 
     lg.printf('SCORE: ' .. self.state.level.score, 0, 0, self.width, 'left')
+
+    local size = 32
+    local range = 100
+    lg.push()
+    lg.translate((self.width - #pieceTypes * range) * 0.5, self.height - size - 8)
+    for i, pieceType in ipairs(pieceTypes) do
+        local x = (i - 1) * range
+        self:drawPieceSprite(pieceType.spriteName, x, 0, size)
+        lg.printf(self.state.level.counts[pieceType.name], x + size + 8, (size - 12) * 0.5, self.width, 'left')
+    end
+    lg.pop()
 end
 
 -- キー入力
@@ -72,6 +83,23 @@ function Game:setDebugMode(mode)
 
     -- レベル
     self.state.level:setDebugMode(mode)
+end
+
+-- マウス入力
+function Game:drawPieceSprite(spriteName, x, y, w, h)
+    -- スプライトのサイズ
+    local _, __, sw, sh = self.spriteSheet.quad[spriteName]:getViewport()
+    if w ~= nil then
+        h = w
+    end
+    w = w or sw
+    h = h or sh
+
+    lg.push()
+    lg.translate(x, y)
+    lg.scale(w / sw, h / sh)
+    self.spriteSheet:draw(spriteName, 0, 0)
+    lg.pop()
 end
 
 return Game
