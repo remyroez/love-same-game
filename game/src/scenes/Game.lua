@@ -35,10 +35,12 @@ end
 
 -- 更新
 function Game:update(dt)
+    self.state.level:update(dt)
 end
 
 -- 描画
 function Game:draw()
+    self.state.level:draw()
 end
 
 -- キー入力
