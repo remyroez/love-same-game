@@ -46,19 +46,21 @@ end
 -- 読み込み
 function Level:load(numHorizontal, numVertical)
     -- 駒の数
-    self.numHorizontal = numHorizontal or 20
-    self.numVertical = numVertical or 10
+    self.numHorizontal = math.max(numHorizontal or 20, 1)
+    self.numVertical = math.max(numVertical or 10, 1)
 
     -- 駒のサイズ
-    local pw = math.ceil(self.width / self.numHorizontal)
-    local ph = math.ceil(self.height / self.numVertical)
-    if pw < ph then
-        ph = pw
-    elseif ph < pw then
-        pw = ph
+    do
+        local pw = math.ceil(self.width / self.numHorizontal)
+        local ph = math.ceil(self.height / self.numVertical)
+        if pw < ph then
+            ph = pw
+        elseif ph < pw then
+            pw = ph
+        end
+        self.pieceWidth = pw
+        self.pieceHeight = ph
     end
-    self.pieceWidth = pw
-    self.pieceHeight = ph
 
     -- 駒のリセット
     self.pieces = {}
@@ -71,10 +73,8 @@ function Level:load(numHorizontal, numVertical)
             table.insert(
                 line,
                 Piece {
-                    x = (i - 1) * pw,
-                    y = (j - 1) * ph,
-                    width = pw,
-                    height = ph,
+                    width = self.pieceWidth,
+                    height = self.pieceHeight,
                     type = pieceType.name,
                     spriteSheet = self.spriteSheet,
                     spriteName = pieceType.spriteName,
@@ -101,6 +101,8 @@ function Level:draw()
     -- 駒の描画
     for i, line in ipairs(self.pieces) do
         for j, piece in ipairs(line) do
+            piece.x = (i - 1) * self.pieceWidth
+            piece.y = (self.numVertical - j) * self.pieceHeight
             piece:draw()
         end
     end
@@ -114,6 +116,9 @@ end
 
 -- マウス入力
 function Level:mousepressed(x, y, button, istouch, presses)
+    local px = math.ceil((x - self.x) / self.pieceWidth)
+    local py = self.numVertical - math.ceil((y - self.y) / self.pieceHeight) + 1
+    self:removePiece(px, py)
 end
 
 -- デバッグモードの設定
@@ -134,6 +139,28 @@ end
 -- 合計サイズ
 function Level:totalSize()
     return self:totalWidth(), self:totalHeight()
+end
+
+-- 駒を取り除く
+function Level:removePiece(x, y)
+    print(x, y)
+    if x <= 0 or x > #self.pieces then
+        -- 範囲外
+    elseif y <= 0 then
+        -- 範囲外
+    else
+        local line = self.pieces[x]
+        if line == nil then
+            -- 範囲外
+        elseif y > #line then
+            -- 範囲外
+        else
+            table.remove(line, y)
+        end
+        if #line == 0 then
+            table.remove(self.pieces, x)
+        end
+    end
 end
 
 return Level

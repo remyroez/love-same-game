@@ -46,10 +46,12 @@ end
 
 -- キー入力
 function Game:keypressed(key, scancode, isrepeat)
+    self.state.level:keypressed(key, scancode, isrepeat)
 end
 
 -- マウス入力
 function Game:mousepressed(x, y, button, istouch, presses)
+    self.state.level:mousepressed(x, y, button, istouch, presses)
 end
 
 -- デバッグモードの設定
