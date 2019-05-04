@@ -1,11 +1,22 @@
 
 local class = require 'middleclass'
 
+-- クラス
+local Piece = require 'Piece'
+
 -- エイリアス
 local lg = love.graphics
 
 -- レベル
 local Level = class 'Level'
+
+local pieceTypes = {
+    { name = 'rabbit', spriteName = 'rabbit.png' },
+    { name = 'duck', spriteName = 'duck.png' },
+    { name = 'pig', spriteName = 'pig.png' },
+    { name = 'monkey', spriteName = 'monkey.png' },
+    { name = 'giraffe', spriteName = 'giraffe.png' },
+}
 
 -- 初期化
 function Level:initialize(spriteSheet)
@@ -31,7 +42,19 @@ function Level:load(numHorizontal, numVertical)
     for i = 1, numHorizontal do
         local line = {}
         for j = 1, numVertical do
-            table.insert(line, love.math.random(5))
+            local pieceType = pieceTypes[love.math.random(#pieceTypes)]
+            table.insert(
+                line,
+                Piece {
+                    x = i * 32,
+                    y = j * 32,
+                    width = 32,
+                    height = 32,
+                    type = pieceType.name,
+                    spriteSheet = self.spriteSheet,
+                    spriteName = pieceType.spriteName,
+                }
+            )
         end
         table.insert(self.pieces, line)
     end
@@ -50,7 +73,7 @@ function Level:draw()
     -- 駒の描画
     for i, line in ipairs(self.pieces) do
         for j, piece in ipairs(line) do
-            lg.print(piece, i * 32, j * 32)
+            piece:draw()
         end
     end
 end
