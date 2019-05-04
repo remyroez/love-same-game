@@ -11,6 +11,15 @@ local Level = require 'Level'
 -- ゲーム
 local Game = Scene:newState 'game'
 
+-- 駒のタイプ
+local pieceTypes = {
+    { name = 'rabbit', spriteName = 'rabbit.png' },
+    { name = 'duck', spriteName = 'duck.png' },
+    { name = 'pig', spriteName = 'pig.png' },
+    { name = 'monkey', spriteName = 'monkey.png' },
+    { name = 'giraffe', spriteName = 'giraffe.png' },
+}
+
 -- 読み込み
 function Game:load()
 end
@@ -25,7 +34,7 @@ function Game:enteredState(path, ...)
 
     -- レベル
     state.level = Level(self.spriteSheet)
-    state.level:load()
+    state.level:load(20, 10, pieceTypes)
     state.level.y = (self.height - state.level:totalHeight()) * 0.5
 end
 
@@ -42,6 +51,8 @@ end
 -- 描画
 function Game:draw()
     self.state.level:draw()
+
+    lg.printf('SCORE: ' .. self.state.level.score, 0, 0, self.width, 'left')
 end
 
 -- キー入力

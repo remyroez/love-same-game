@@ -10,15 +10,6 @@ local lg = love.graphics
 -- レベル
 local Level = class 'Level'
 
--- 駒のタイプ
-local pieceTypes = {
-    { name = 'rabbit', spriteName = 'rabbit.png' },
-    { name = 'duck', spriteName = 'duck.png' },
-    { name = 'pig', spriteName = 'pig.png' },
-    { name = 'monkey', spriteName = 'monkey.png' },
-    { name = 'giraffe', spriteName = 'giraffe.png' },
-}
-
 -- 連結
 local function concat(...)
     local result = {}
@@ -49,19 +40,23 @@ function Level:initialize(spriteSheet, x, y, width, height)
     self.spriteSheet = spriteSheet
 
     -- 駒情報
+    self.pieceTypes = nil
     self.pieces = {}
     self.lastEnviroments = {}
     self.numHorizontal = 20
     self.numVertical = 10
     self.pieceWidth = 0
     self.pieceHeight = 0
+    self.score = 0
+    self.lastScores = {}
+    self.counts = {}
 
     -- デバッグモード
     self.debugMode = false
 end
 
 -- 読み込み
-function Level:load(numHorizontal, numVertical)
+function Level:load(numHorizontal, numVertical, pieceTypes)
     -- 駒の数
     self.numHorizontal = math.max(numHorizontal or self.numHorizontal or 20, 1)
     self.numVertical = math.max(numVertical or self.numVertical or 10, 1)
@@ -80,14 +75,25 @@ function Level:load(numHorizontal, numVertical)
     end
 
     -- 駒のリセット
+    self.pieceTypes = self.pieceTypes or pieceTypes or {}
     self.pieces = {}
     self.lastEnviroments = {}
+    self.score = 0
+
+    -- 駒タイプが空なら終了
+    if #self.pieceTypes == 0 then
+        return
+    end
 
     -- 駒のランダム配置
     for i = 1, self.numHorizontal do
         local line = {}
         for j = 1, self.numVertical do
-            local pieceType = pieceTypes[love.math.random(#pieceTypes)]
+            local pieceType = self.pieceTypes[love.math.random(#self.pieceTypes)]
+            if self.counts[pieceType.name] == nil then
+                self.counts[pieceType.name] = 0
+            end
+            self.counts[pieceType.name] = self.counts[pieceType.name] + 1
             table.insert(
                 line,
                 Piece {
@@ -283,6 +289,7 @@ function Level:removeSamePieces(x, y, save)
             end
             table.insert(self.lastEnviroments, clonePieces)
         end
+
         -- 一番遠いところから消すためにソート
         table.sort(
             coords,
@@ -294,19 +301,38 @@ function Level:removeSamePieces(x, y, save)
                 end
             end
         )
+
+        -- タイプのカウントを減らす
+        local piece = self:getPiece(x, y)
+        if piece then
+            self.counts[piece.type] = self.counts[piece.type] - #coords
+        end
+
         -- 駒の除外
         for _, coord in ipairs(coords) do
             self:removePiece(unpack(coord))
         end
+
+        -- スコア獲得
+        self:scorePieces(#coords)
     end
+end
+
+-- スコア獲得
+function Level:scorePieces(num)
+    table.insert(self.lastScores, self.score)
+    self.score = self.score + math.pow(num - 1, 2)
 end
 
 -- 直前の状態に戻す
 function Level:undo()
     if #self.lastEnviroments == 0 then
         -- 初手
+    elseif #self.lastScores == 0 then
+        -- 初手
     else
         self.pieces = table.remove(self.lastEnviroments)
+        self.score = table.remove(self.lastScores)
     end
 end
 
@@ -314,9 +340,13 @@ end
 function Level:undoAll()
     if #self.lastEnviroments == 0 then
         -- 初手
+    elseif #self.lastScores == 0 then
+        -- 初手
     else
         self.pieces = self.lastEnviroments[1]
         self.lastEnviroments = {}
+        self.score = 0
+        self.lastScores = {}
     end
 end
 
