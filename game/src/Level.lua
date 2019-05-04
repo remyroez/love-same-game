@@ -139,7 +139,6 @@ end
 function Level:mousepressed(x, y, button, istouch, presses)
     local px = math.ceil((x - self.x) / self.pieceWidth)
     local py = self.numVertical - math.ceil((y - self.y) / self.pieceHeight) + 1
-    --print('----------')
     self:removeSamePieces(px, py)
 end
 
@@ -206,26 +205,42 @@ function Level:removePiece(x, y)
     end
 end
 
+-- 駒のチェックを外す
+function Level:uncheckPieces()
+    for i, line in ipairs(self.pieces) do
+        for j, piece in ipairs(line) do
+            piece.checked = false
+        end
+    end
+end
+
 -- 同じタイプの駒の取得
 function Level:pickSamePieceCoords(x, y, type, dirX, dirY)
-    --print('pickSamePieceCoords', x, y, type, dirX, dirY)
     local coords = {}
     local piece = self:getPiece(x, y, type)
     if piece == nil then
         -- 範囲外
+    elseif piece.checked then
+        -- チェック済み
     else
+        -- 駒のチェック
+        piece.checked = true
+
+        -- この駒の座標を登録
         table.insert(coords, { x, y })
-        if dirX ~= 'left' then
-            coords = concat(coords, self:pickSamePieceCoords(x - 1, y, piece.type, 'right', dirY))
+
+        -- 上下左右に探索
+        if dirX ~= (x - 1) then
+            coords = concat(coords, self:pickSamePieceCoords(x - 1, y, piece.type, x, y))
         end
-        if dirX ~= 'right' then
-            coords = concat(coords, self:pickSamePieceCoords(x + 1, y, piece.type, 'left', dirY))
+        if dirX ~= (x + 1) then
+            coords = concat(coords, self:pickSamePieceCoords(x + 1, y, piece.type, x, y))
         end
-        if dirY ~= 'up' then
-            coords = concat(coords, self:pickSamePieceCoords(x, y - 1, piece.type, dirX, 'down'))
+        if dirY ~= (y - 1) then
+            coords = concat(coords, self:pickSamePieceCoords(x, y - 1, piece.type, x, y))
         end
-        if dirY ~= 'down' then
-            coords = concat(coords, self:pickSamePieceCoords(x, y + 1, piece.type, dirX, 'up'))
+        if dirY ~= (y + 1) then
+            coords = concat(coords, self:pickSamePieceCoords(x, y + 1, piece.type, x, y))
         end
     end
     return coords
@@ -234,7 +249,14 @@ end
 -- 同じタイプの駒の除外
 function Level:removeSamePieces(x, y, save)
     save = save == nil and true or save
+
+    -- 同じタイプの駒を探す
     local coords = self:pickSamePieceCoords(x, y)
+
+    -- チェックを外す
+    self:uncheckPieces()
+
+    -- １つ以上なら処理する
     if #coords > 1 then
         -- 直前の状態を保存
         if save then
@@ -260,9 +282,7 @@ function Level:removeSamePieces(x, y, save)
             end
         )
         -- 駒の除外
-        print('----------')
         for _, coord in ipairs(coords) do
-            print(unpack(coord))
             self:removePiece(unpack(coord))
         end
     end

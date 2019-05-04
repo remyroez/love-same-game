@@ -17,6 +17,7 @@ function Piece:initialize(args)
     -- タイプ
     self.type = args.type or 'none'
     self.color = args.color or { 1, 1, 1, 1 }
+    self.checked = false
 
     -- SpriteRenderer 初期化
     self:initializeSpriteRenderer(args.spriteSheet)
