@@ -362,11 +362,11 @@ end
 -- 駒のタイプをカウントする
 function Level:countPieceTypes()
     self.counts = {}
+    for i, pieceType in ipairs(self.pieceTypes) do
+        self.counts[pieceType.name] = 0
+    end
     for i, line in ipairs(self.pieces) do
         for j, piece in ipairs(line) do
-            if self.counts[piece.type] == nil then
-                self.counts[piece.type] = 0
-            end
             self.counts[piece.type] = self.counts[piece.type] + 1
         end
     end

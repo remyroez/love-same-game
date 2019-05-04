@@ -52,12 +52,12 @@ end
 function Game:draw()
     self.state.level:draw()
 
-    lg.printf('SCORE: ' .. self.state.level.score, 0, 0, self.width, 'left')
+    lg.printf(self.state.level.score, 0, 0, self.width, 'center')
 
     local size = 32
     local range = 100
     lg.push()
-    lg.translate((self.width - #pieceTypes * range) * 0.5, self.height - size - 8)
+    lg.translate((self.width - (#pieceTypes - 1) * range) * 0.5 - size, self.height - size - 8)
     for i, pieceType in ipairs(pieceTypes) do
         local x = (i - 1) * range
         self:drawPieceSprite(pieceType.spriteName, x, 0, size)
