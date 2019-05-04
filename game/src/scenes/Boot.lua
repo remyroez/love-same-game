@@ -21,7 +21,7 @@ function Boot:load()
     self.height = height
 
     -- スプライトシートの読み込み
-    --self.spriteSheet = sbss:new('assets/spritesheet.xml')
+    self.spriteSheet = sbss:new('assets/round_nodetailsOutline.xml')
 end
 
 -- 更新
