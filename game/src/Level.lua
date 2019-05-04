@@ -50,6 +50,7 @@ function Level:initialize(spriteSheet, x, y, width, height)
 
     -- 駒情報
     self.pieces = {}
+    self.lastEnviroments = {}
     self.numHorizontal = 0
     self.numVertical = 0
     self.pieceWidth = 0
@@ -80,6 +81,7 @@ function Level:load(numHorizontal, numVertical)
 
     -- 駒のリセット
     self.pieces = {}
+    self.lastEnviroments = {}
 
     -- 駒のランダム配置
     for i = 1, self.numHorizontal do
@@ -128,13 +130,16 @@ end
 
 -- キー入力
 function Level:keypressed(key, scancode, isrepeat)
+    if key == 'backspace' then
+        self:undo()
+    end
 end
 
 -- マウス入力
 function Level:mousepressed(x, y, button, istouch, presses)
     local px = math.ceil((x - self.x) / self.pieceWidth)
     local py = self.numVertical - math.ceil((y - self.y) / self.pieceHeight) + 1
-    print('----------')
+    --print('----------')
     self:removeSamePieces(px, py)
 end
 
@@ -227,9 +232,23 @@ function Level:pickSamePieceCoords(x, y, type, dirX, dirY)
 end
 
 -- 同じタイプの駒の除外
-function Level:removeSamePieces(x, y)
+function Level:removeSamePieces(x, y, save)
+    save = save == nil and true or save
     local coords = self:pickSamePieceCoords(x, y)
     if #coords > 1 then
+        -- 直前の状態を保存
+        if save then
+            local clonePieces = {}
+            for i, line in ipairs(self.pieces) do
+                local cloneLine = {}
+                for j, piece in ipairs(line) do
+                    cloneLine[j] = piece
+                end
+                clonePieces[i] = cloneLine
+            end
+            table.insert(self.lastEnviroments, clonePieces)
+        end
+        -- 一番遠いところから消すためにソート
         table.sort(
             coords,
             function (a, b)
@@ -240,11 +259,21 @@ function Level:removeSamePieces(x, y)
                 end
             end
         )
+        -- 駒の除外
         print('----------')
         for _, coord in ipairs(coords) do
             print(unpack(coord))
             self:removePiece(unpack(coord))
         end
+    end
+end
+
+-- 直前の状態に戻す
+function Level:undo()
+    if #self.lastEnviroments == 0 then
+        -- 初手
+    else
+        self.pieces = table.remove(self.lastEnviroments)
     end
 end
 
