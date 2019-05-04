@@ -26,6 +26,7 @@ function Game:enteredState(path, ...)
     -- レベル
     state.level = Level(self.spriteSheet)
     state.level:load()
+    state.level.y = (self.height - state.level:totalHeight()) * 0.5
 end
 
 -- ステート終了

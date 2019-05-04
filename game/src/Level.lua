@@ -19,7 +19,11 @@ local pieceTypes = {
 }
 
 -- 初期化
-function Level:initialize(spriteSheet, width, height)
+function Level:initialize(spriteSheet, x, y, width, height)
+    -- 座標
+    self.x = x or 0
+    self.y = y or 0
+
     -- レベルのサイズ
     local w, h = lg.getDimensions()
     self.width = width or w
@@ -28,8 +32,12 @@ function Level:initialize(spriteSheet, width, height)
     -- スプライトシート
     self.spriteSheet = spriteSheet
 
-    -- 駒
+    -- 駒情報
     self.pieces = {}
+    self.numHorizontal = 0
+    self.numVertical = 0
+    self.pieceWidth = 0
+    self.pieceHeight = 0
 
     -- デバッグモード
     self.debugMode = false
@@ -37,6 +45,7 @@ end
 
 -- 読み込み
 function Level:load(numHorizontal, numVertical)
+    -- 駒の数
     self.numHorizontal = numHorizontal or 20
     self.numVertical = numVertical or 10
 
@@ -48,6 +57,8 @@ function Level:load(numHorizontal, numVertical)
     elseif ph < pw then
         pw = ph
     end
+    self.pieceWidth = pw
+    self.pieceHeight = ph
 
     -- 駒のリセット
     self.pieces = {}
@@ -84,12 +95,17 @@ end
 
 -- 描画
 function Level:draw()
+    lg.push()
+    lg.translate(self.x, self.y)
+
     -- 駒の描画
     for i, line in ipairs(self.pieces) do
         for j, piece in ipairs(line) do
             piece:draw()
         end
     end
+
+    lg.pop()
 end
 
 -- キー入力
@@ -103,6 +119,21 @@ end
 -- デバッグモードの設定
 function Level:setDebugMode(mode)
     self.debugMode = mode or false
+end
+
+-- 合計幅
+function Level:totalWidth()
+    return self.pieceWidth * self.numHorizontal
+end
+
+-- 合計高さ
+function Level:totalHeight()
+    return self.pieceHeight * self.numVertical
+end
+
+-- 合計サイズ
+function Level:totalSize()
+    return self:totalWidth(), self:totalHeight()
 end
 
 return Level
