@@ -51,8 +51,8 @@ function Level:initialize(spriteSheet, x, y, width, height)
     -- 駒情報
     self.pieces = {}
     self.lastEnviroments = {}
-    self.numHorizontal = 0
-    self.numVertical = 0
+    self.numHorizontal = 20
+    self.numVertical = 10
     self.pieceWidth = 0
     self.pieceHeight = 0
 
@@ -63,8 +63,8 @@ end
 -- 読み込み
 function Level:load(numHorizontal, numVertical)
     -- 駒の数
-    self.numHorizontal = math.max(numHorizontal or 20, 1)
-    self.numVertical = math.max(numVertical or 10, 1)
+    self.numHorizontal = math.max(numHorizontal or self.numHorizontal or 20, 1)
+    self.numVertical = math.max(numVertical or self.numVertical or 10, 1)
 
     -- 駒のサイズ
     do
@@ -131,15 +131,28 @@ end
 -- キー入力
 function Level:keypressed(key, scancode, isrepeat)
     if key == 'backspace' then
+        -- アンドゥ
         self:undo()
+    elseif key == 'home' then
+        -- 最初に戻す
+        self:undoAll()
+    elseif key == 'end' then
+        -- リセット
+        self:load()
     end
 end
 
 -- マウス入力
 function Level:mousepressed(x, y, button, istouch, presses)
-    local px = math.ceil((x - self.x) / self.pieceWidth)
-    local py = self.numVertical - math.ceil((y - self.y) / self.pieceHeight) + 1
-    self:removeSamePieces(px, py)
+    if button == 1 then
+        -- 駒を除外
+        local px = math.ceil((x - self.x) / self.pieceWidth)
+        local py = self.numVertical - math.ceil((y - self.y) / self.pieceHeight) + 1
+        self:removeSamePieces(px, py)
+    elseif button == 2 then
+        -- アンドゥ
+        self:undo()
+    end
 end
 
 -- デバッグモードの設定
@@ -294,6 +307,16 @@ function Level:undo()
         -- 初手
     else
         self.pieces = table.remove(self.lastEnviroments)
+    end
+end
+
+-- 最初の状態に戻す
+function Level:undoAll()
+    if #self.lastEnviroments == 0 then
+        -- 初手
+    else
+        self.pieces = self.lastEnviroments[1]
+        self.lastEnviroments = {}
     end
 end
 
