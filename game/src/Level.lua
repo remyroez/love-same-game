@@ -56,6 +56,7 @@ function Level:initialize(spriteSheet, x, y, width, height)
     self.offsetY = 0
     self.removalPieceCoords = {}
     self.checked = false
+    self.title = ''
 
     -- タイマー
     self.timer = Timer()
@@ -95,6 +96,7 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
     self.lastScores = {}
     self.removalPieceCoords = {}
     self.checked = false
+    self.title = #self.pieceTypes .. '-' .. self.numHorizontal .. '-' .. self.numVertical
 
     -- 駒タイプが空なら終了
     if #self.pieceTypes == 0 then
