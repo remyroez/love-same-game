@@ -1,7 +1,7 @@
 # SAME GAME
 :revolving_hearts: Same game with LÖVE
 
-![Screenshot](https://user-images.githubusercontent.com/1193542/57123252-1c71a580-6dbc-11e9-8891-8fd36957b539.png)
+![Screenshot](https://user-images.githubusercontent.com/1193542/57196067-31089600-6f94-11e9-9073-fc0d19f560b2.png)
 
 ## Controls
 
