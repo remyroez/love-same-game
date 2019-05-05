@@ -29,7 +29,7 @@ function Game:enteredState(width, height, pieceTypes, ...)
 
     -- レベル
     state.pieceTypes = pieceTypes or {}
-    state.level = Level(self.spriteSheet, 0, 0, nil, self.height - (top + bottom))
+    state.level = Level(self.spriteSheet, self.sounds, 0, 0, nil, self.height - (top + bottom))
     state.level:load(width, height, state.pieceTypes)
     state.level.x = (state.level.width - state.level:totalWidth()) * 0.5
     state.level.y = (state.level.height - state.level:totalHeight()) * 0.5 + top
@@ -77,6 +77,10 @@ function Game:enteredState(width, height, pieceTypes, ...)
     state.alpha3 = 0
     state.dialog = false
     state.clear = false
+
+    -- ＢＧＭ
+    self.musics.ingame:setVolume(0.5)
+    self.musics.ingame:play()
 end
 
 -- ステート終了
@@ -113,6 +117,11 @@ function Game:update(dt)
                     self.state.busy = false
                 end
             )
+
+            -- ＢＧＭ，ＳＥ
+            self.musics.ingame:stop()
+            self.sounds.gameover:seek(0)
+            self.sounds.gameover:play()
         end
     end
 end
@@ -206,6 +215,10 @@ function Game:keypressed(key, scancode, isrepeat)
         )
         self.state.busy = true
 
+        -- ＳＥ
+        self.sounds.start:seek(0)
+        self.sounds.start:play()
+
     elseif not self.state.dialog and key == 'return' then
         -- 終了演出
         self.state.dialog = true
@@ -222,8 +235,14 @@ function Game:keypressed(key, scancode, isrepeat)
                 self.state.busy = false
             end
         )
+
+        -- ＢＧＭ
+        self.musics.ingame:setVolume(0.25)
+
     elseif self.state.dialog then
+        -- ダイアログ
         if key == 'y' then
+            -- 終了する
             self.state.busy = true
             self.state.timer:tween(
                 1,
@@ -244,9 +263,19 @@ function Game:keypressed(key, scancode, isrepeat)
                             self.state.busy = false
                         end
                     )
+
+                    -- ＢＧＭ，ＳＥ
+                    self.musics.ingame:stop()
+                    self.sounds.gameover:seek(0)
+                    self.sounds.gameover:play()
                 end
             )
+
+            -- ＳＥ
+            self.sounds.start:seek(0)
+            self.sounds.start:play()
         elseif key == 'n' then
+            -- 続ける
             self.state.busy = true
             self.state.timer:tween(
                 1,
@@ -258,8 +287,13 @@ function Game:keypressed(key, scancode, isrepeat)
                     self.state.level.busy = false
                     self.state.dialog = false
                     self.state.busy = false
+                    self.musics.ingame:setVolume(0.5)
                 end
             )
+
+            -- ＳＥ
+            self.sounds.cancel:seek(0)
+            self.sounds.cancel:play()
         end
     else
         self.state.level:keypressed(key, scancode, isrepeat)

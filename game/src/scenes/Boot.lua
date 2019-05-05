@@ -29,6 +29,32 @@ function Boot:load()
     self.font32 = lg.newFont(fontName, 32)
     self.font64 = lg.newFont(fontName, 64)
 
+    -- 音楽
+    local musics = {
+        ingame = 'Alpha Dance.ogg',
+        outgame = 'Flowing Rocks.ogg',
+    }
+    self.musics = {}
+    for name, path in pairs(musics) do
+        self.musics[name] = love.audio.newSource('assets/' .. path, 'static')
+        self.musics[name]:setLooping(true)
+        self.musics[name]:setVolume(0.5)
+    end
+
+    -- ＳＥ
+    local sounds = {
+        gameover = 'Beat ident.ogg',
+        start = 'threeTone2.ogg',
+        cursor = 'coin5.ogg',
+        cancel = 'twoTone2.ogg',
+        remove = 'upgrade1.ogg',
+        undo = 'jump4.ogg',
+    }
+    self.sounds = {}
+    for name, path in pairs(sounds) do
+        self.sounds[name] = love.audio.newSource('assets/' .. path, 'static')
+    end
+
     -- ベストスコア
     self.best = {}
 end
