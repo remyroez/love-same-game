@@ -51,11 +51,16 @@ end
 
 -- 描画
 function Game:draw()
+    lg.clear(.42, .75, .89)
+
+    -- レベル描画
     self.state.level:draw()
 
+    -- 得点
     lg.setColor(1, 1, 1, 1)
     lg.printf(self.state.level.score, 0, 0, self.width, 'center')
 
+    -- 駒の種類別の残数
     local size = 32
     local range = 100
     lg.push()
