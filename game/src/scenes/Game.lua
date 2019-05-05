@@ -97,7 +97,7 @@ function Game:setDebugMode(mode)
     self.state.level:setDebugMode(mode)
 end
 
--- マウス入力
+-- 駒スプライトの描画
 function Game:drawPieceSprite(spriteName, x, y, w, h)
     -- スプライトのサイズ
     local _, __, sw, sh = self.spriteSheet.quad[spriteName]:getViewport()
