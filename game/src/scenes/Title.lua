@@ -13,11 +13,36 @@ local Title = Scene:newState 'title'
 
 -- 駒のタイプ
 local spriteNames = {
-    'rabbit.png',
+    'bear.png',
+    'buffalo.png',
+    'chick.png',
+    'chicken.png',
+    'cow.png',
+    'crocodile.png',
+    'dog.png',
     'duck.png',
-    'pig.png',
-    'monkey.png',
+    'elephant.png',
+    'frog.png',
     'giraffe.png',
+    'goat.png',
+    'gorilla.png',
+    'hippo.png',
+    'horse.png',
+    'monkey.png',
+    'moose.png',
+    'narwhal.png',
+    'owl.png',
+    'panda.png',
+    'parrot.png',
+    'penguin.png',
+    'pig.png',
+    'rabbit.png',
+    'rhino.png',
+    'sloth.png',
+    'snake.png',
+    'walrus.png',
+    'whale.png',
+    'zebra.png',
 }
 
 -- 次のステートへ
@@ -40,12 +65,16 @@ function Title:enteredState(...)
     state.w, state.h = self:getSpriteSize('rabbit.png')
     state.numX, state.numY = 7, 6
     state.sprites = {}
+    state.offsets = {}
+    local tweenOffsets = {}
     for i = 1, state.numX do
         local line = {}
         for j = 1, state.numY do
             table.insert(line, spriteNames[love.math.random(#spriteNames)])
         end
         table.insert(state.sprites, line)
+        table.insert(state.offsets, love.math.randomNormal() * (-self.height * 0.5) + -self.height * 0.5)
+        table.insert(tweenOffsets, 0)
     end
 
     -- 開始演出
@@ -70,7 +99,7 @@ function Title:enteredState(...)
     state.timer:tween(
         1,
         state,
-        { offset = 0 },
+        { offset = 0, offsets = tweenOffsets },
         'in-bounce'
     )
     state.busy = true
@@ -103,7 +132,7 @@ function Title:draw()
     lg.translate((self.width - state.w * state.numX) * 0.5, (self.height - state.h * state.numY) * 0.5)
     for i, line in ipairs(state.sprites) do
         for j, spriteName in ipairs(line) do
-            self:drawPieceSprite(spriteName, (i - 1) * state.w, (j - 1) * state.h, state.w, state.h)
+            self:drawPieceSprite(spriteName, (i - 1) * state.w, (j - 1) * state.h + state.offsets[i], state.w, state.h)
         end
     end
     lg.pop()

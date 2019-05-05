@@ -12,11 +12,63 @@ local Select = Scene:newState 'select'
 
 -- 駒のタイプ
 local pieceTypes = {
-    { name = 'rabbit', spriteName = 'rabbit.png' },
-    { name = 'duck', spriteName = 'duck.png' },
+    -- brown
+    {
+        { name = 'bear', spriteName = 'bear.png' },
+        { name = 'buffalo', spriteName = 'buffalo.png' },
+        { name = 'goat', spriteName = 'goat.png' },
+        { name = 'horse', spriteName = 'horse.png' },
+        { name = 'monkey', spriteName = 'monkey.png' },
+        { name = 'moose', spriteName = 'moose.png' },
+        { name = 'owl', spriteName = 'owl.png' },
+        { name = 'sloth', spriteName = 'sloth.png' },
+        { name = 'walrus', spriteName = 'walrus.png' },
+    },
+
+    -- yellow
+    {
+        { name = 'chick', spriteName = 'chick.png' },
+        { name = 'giraffe', spriteName = 'giraffe.png' },
+    },
+
+    -- white
+    {
+        { name = 'chicken', spriteName = 'chicken.png' },
+        { name = 'dog', spriteName = 'dog.png' },
+        { name = 'elephant', spriteName = 'elephant.png' },
+        { name = 'panda', spriteName = 'panda.png' },
+        { name = 'rabbit', spriteName = 'rabbit.png' },
+        { name = 'rhino', spriteName = 'rhino.png' },
+    },
+
+    -- green
+    {
+        { name = 'crocodile', spriteName = 'crocodile.png' },
+        { name = 'duck', spriteName = 'duck.png' },
+        { name = 'frog', spriteName = 'frog.png' },
+        { name = 'snake', spriteName = 'snake.png' },
+    },
+
+    -- blue
+    {
+        { name = 'hippo', spriteName = 'hippo.png' },
+        { name = 'narwhal', spriteName = 'narwhal.png' },
+    },
+
+    -- red
+    { name = 'parrot', spriteName = 'parrot.png' },
+
+    -- black
+    {
+        { name = 'penguin', spriteName = 'penguin.png' },
+        { name = 'whale', spriteName = 'whale.png' },
+        { name = 'cow', spriteName = 'cow.png' },
+        { name = 'gorilla', spriteName = 'gorilla.png' },
+        { name = 'zebra', spriteName = 'zebra.png' },
+    },
+
+    -- pink
     { name = 'pig', spriteName = 'pig.png' },
-    { name = 'monkey', spriteName = 'monkey.png' },
-    { name = 'giraffe', spriteName = 'giraffe.png' },
 }
 
 -- 次のステートへ
@@ -53,6 +105,12 @@ function Select:enteredState(width, height, pieceTypes, ...)
         { alpha = 0 },
         'in-out-cubic',
         function()
+            state.timer:every(
+                0.5,
+                function ()
+                    state.visiblePressAnyKey = not state.visiblePressAnyKey
+                end
+            )
             state.busy = false
         end
     )
@@ -63,6 +121,7 @@ function Select:enteredState(width, height, pieceTypes, ...)
         'in-bounce'
     )
     state.busy = true
+    state.visiblePressAnyKey = true
 
     -- レベル設定
     state.levelWidth = width or 20
@@ -115,14 +174,16 @@ function Select:draw()
             state.h
         )
     end
-    lg.printf(
-        '3/4/5',
-        self.font16,
-        0,
-        self.height * 0.85 - self.font16:getHeight() * 0.5,
-        self.width,
-        'center'
-    )
+    if state.visiblePressAnyKey and not state.busy then
+        lg.printf(
+            '3/4/5/6/7/8',
+            self.font16,
+            0,
+            self.height * 0.85 - self.font16:getHeight() * 0.5,
+            self.width,
+            'center'
+        )
+    end
 
     -- レベルの横の数
     lg.setColor(1, 1, 1, 1)
@@ -134,15 +195,17 @@ function Select:draw()
         self.width * 0.5,
         'right'
     )
-    lg.setColor(1, 1, 1, 1)
-    lg.printf(
-        'LEFT/RIGHT',
-        self.font16,
-        -32,
-        self.height * 0.5 - self.font16:getHeight() * 0.5,
-        self.width * 0.5,
-        'right'
-    )
+    if state.visiblePressAnyKey and not state.busy then
+        lg.setColor(1, 1, 1, 1)
+        lg.printf(
+            'LEFT/RIGHT',
+            self.font16,
+            -32,
+            self.height * 0.5 - self.font16:getHeight() * 0.5,
+            self.width * 0.5,
+            'right'
+        )
+    end
 
     -- レベルの縦の数
     lg.setColor(1, 1, 1, 1)
@@ -154,14 +217,16 @@ function Select:draw()
         self.width,
         'left'
     )
-    lg.printf(
-        'UP/DOWN',
-        self.font16,
-        self.width * 0.5 + 32,
-        self.height * 0.5 - self.font16:getHeight() * 0.5,
-        self.width,
-        'left'
-    )
+    if state.visiblePressAnyKey and not state.busy then
+        lg.printf(
+            'UP/DOWN',
+            self.font16,
+            self.width * 0.5 + 32,
+            self.height * 0.5 - self.font16:getHeight() * 0.5,
+            self.width,
+            'left'
+        )
+    end
 
     -- レベルの縦と高さ
     lg.setColor(1, 1, 1, 1)
@@ -175,21 +240,22 @@ function Select:draw()
     )
 
     -- ベストスコア
-    do--if self.best[self:getLevelTitle()] then
-        lg.setColor(1, 1, 1, 1)
+    do
+        local best = self.best[self:getLevelTitle()] or 0
+        lg.setColor(1, 1, 1, best == 0 and 0.5 or 1)
         lg.printf(
             'BEST',
-            self.font16,
-            -16,
-            self.height * 0.6 - self.font16:getHeight() * 0.5,
+            self.font32,
+            -16 + state.offsetX,
+            self.height * 0.6 - self.font32:getHeight() * 0.5 + state.offsetY + state.offsetT,
             self.width * 0.5,
             'right'
         )
         lg.printf(
-            self.best[self:getLevelTitle()] or 0,
+            best,
             self.font32,
-            self.width * 0.5 + 16,
-            self.height * 0.6 - self.font32:getHeight() * 0.5,
+            self.width * 0.5 + 16 + state.offsetX,
+            self.height * 0.6 - self.font32:getHeight() * 0.5 + state.offsetY + state.offsetT,
             self.width,
             'left'
         )
@@ -207,14 +273,23 @@ function Select:keypressed(key, scancode, isrepeat)
     local state = self.state
     if state.busy then
         -- 演出中
-    elseif key == '3' then
+    elseif key == '3' and not isrepeat then
         self:randomTypes(3)
         self:playCursor()
-    elseif key == '4' then
+    elseif key == '4' and not isrepeat then
         self:randomTypes(4)
         self:playCursor()
-    elseif key == '5' then
+    elseif key == '5' and not isrepeat then
         self:randomTypes(5)
+        self:playCursor()
+    elseif key == '6' and not isrepeat then
+        self:randomTypes(6)
+        self:playCursor()
+    elseif key == '7' and not isrepeat then
+        self:randomTypes(7)
+        self:playCursor()
+    elseif key == '8' and not isrepeat then
+        self:randomTypes(8)
         self:playCursor()
     elseif key == 'left' then
         -- レベルの幅
@@ -292,7 +367,7 @@ function Select:keypressed(key, scancode, isrepeat)
 
         -- ＳＥ
         self:playCursor()
-    elseif key == 'return' then
+    elseif (key == 'return' or key == 'space') and not isrepeat then
         state.timer:tween(
             1,
             state,
@@ -354,7 +429,12 @@ function Select:randomTypes(num)
 
     -- ランダムに抜き出して選択
     for i = 1, num do
-        table.insert(self.state.levelTypes, table.remove(types, love.math.random(#types)))
+        local t = table.remove(types, love.math.random(#types))
+        if t[1] ~= nil then
+            -- 配列だったので更に選ぶ
+            t = t[love.math.random(#t)]
+        end
+        table.insert(self.state.levelTypes, t)
     end
 
     -- 演出
