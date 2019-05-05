@@ -288,7 +288,7 @@ end
 
 -- マウス入力
 function Select:mousepressed(x, y, button, istouch, presses)
-    self:keypressed('space')
+    self:keypressed('return')
 end
 
 -- 駒スプライトのサイズ
