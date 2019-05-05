@@ -53,6 +53,8 @@ function Level:initialize(spriteSheet, x, y, width, height)
     self.counts = {}
     self.offsetX = 0
     self.offsetY = 0
+    self.removalPieceCoords = {}
+    self.checked = false
 
     -- タイマー
     self.timer = Timer()
@@ -90,6 +92,8 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
     self.lastEnviroments = {}
     self.score = 0
     self.lastScores = {}
+    self.removalPieceCoords = {}
+    self.checked = false
 
     -- 駒タイプが空なら終了
     if #self.pieceTypes == 0 then
@@ -135,6 +139,22 @@ end
 -- 更新
 function Level:update(dt)
     self.timer:update(dt)
+
+    -- マウスカーソル下の駒にチェックを入れる
+    local x, y = self:getMousePosition()
+    local piece = self:getPiece(x, y)
+    if piece == nil then
+        -- 範囲外
+        if self.checked then
+            self:uncheckPieces()
+        end
+    elseif piece.checked then
+        -- チェック済み
+    else
+        self:uncheckPieces()
+        self.removalPieceCoords = self:pickSamePieceCoords(x, y)
+        self.checked = true
+    end
 end
 
 -- 描画
@@ -186,6 +206,12 @@ function Level:mousepressed(x, y, button, istouch, presses)
         -- アンドゥ
         self:undo()
     end
+end
+
+-- マウスポジションの取得
+function Level:getMousePosition()
+    local x, y = love.mouse.getPosition()
+    return math.ceil((x - self.x) / self.pieceWidth), self.numVertical - math.ceil((y - self.y) / self.pieceHeight) + 1
 end
 
 -- デバッグモードの設定
@@ -260,6 +286,8 @@ function Level:uncheckPieces()
             piece.checked = false
         end
     end
+    self.removalPieceCoords = {}
+    self.checked = false
 end
 
 -- 同じタイプの駒の取得
@@ -299,7 +327,7 @@ function Level:removeSamePieces(x, y, save)
     save = save == nil and true or save
 
     -- 同じタイプの駒を探す
-    local coords = self:pickSamePieceCoords(x, y)
+    local coords = self.removalPieceCoords -- self:pickSamePieceCoords(x, y)
 
     -- チェックを外す
     self:uncheckPieces()
@@ -338,6 +366,7 @@ function Level:removeSamePieces(x, y, save)
         end
 
         -- 駒の除外
+        self.timer:cancel('vanish')
         for _, coord in ipairs(coords) do
             self:tweenPieceVanish(self:removePiece(unpack(coord)), 0.5)
         end
@@ -345,7 +374,8 @@ function Level:removeSamePieces(x, y, save)
             0.25,
             function ()
                 self:tweenPiecePosition(0.5)
-            end
+            end,
+            'vanish'
         )
 
         -- スコア獲得
@@ -371,6 +401,7 @@ function Level:undo()
     else
         self.pieces = table.remove(self.lastEnviroments)
         self.score = table.remove(self.lastScores)
+        self.timer:cancel('vanish')
         self:tweenPiecePosition(0.5)
 
         -- 駒のタイプのカウント
@@ -389,6 +420,7 @@ function Level:undoAll()
         self.lastEnviroments = {}
         self.score = 0
         self.lastScores = {}
+        self.timer:cancel('vanish')
         self:tweenPiecePosition(0.5)
 
         -- 駒のタイプのカウント
@@ -423,17 +455,17 @@ function Level:tweenPiecePosition(delay)
                 piece.x, piece.y = x, y
             else
                 -- Ｘ方向
-                if piece.x ~= x then
+                if piece.x ~= x or self:hasTimer(piece.uuid .. '_x') then
                     self:tween(
                         delay,
                         piece,
                         { x = x },
-                        'in-out-cubic',
+                        (x > piece.x) and 'out-cubic' or 'in-out-cubic',
                         piece.uuid .. '_x'
                     )
                 end
                 -- Ｙ方向
-                if piece.y ~= y then
+                if piece.y ~= y or self:hasTimer(piece.uuid .. '_y') then
                     self:tween(
                         delay,
                         piece,
@@ -443,7 +475,7 @@ function Level:tweenPiecePosition(delay)
                     )
                 end
                 -- アルファ値
-                if piece.color[4] < 1 then
+                if piece.color[4] ~= 1 or self:hasTimer(piece.uuid .. '_color') then
                     self:tween(
                         delay,
                         piece.color,
@@ -451,15 +483,31 @@ function Level:tweenPiecePosition(delay)
                         'out-elastic',
                         piece.uuid .. '_color'
                     )
+                    for i, vp in ipairs(self.vanishingPieces) do
+                        if vp == piece then
+                            table.remove(self.vanishingPieces, i)
+                            break
+                        end
+                    end
                 end
                 -- スケール
-                if piece.scaleX < piece.baseScaleX or piece.scaleY < piece.baseScaleY then
+                if piece.scaleX ~= piece.baseScaleX or piece.scaleY ~= piece.baseScaleY or self:hasTimer(piece.uuid .. '_scale') then
                     self:tween(
                         delay,
                         piece,
                         { scaleX = piece.baseScaleX, scaleY = piece.baseScaleY },
                         'out-elastic',
                         piece.uuid .. '_scale'
+                    )
+                end
+                -- 回転
+                if piece.rotation > 0 or piece.rotation < 0 or self:hasTimer(piece.uuid .. '_rotation') then
+                    self:tween(
+                        delay,
+                        piece,
+                        { rotation = 0 },
+                        'in-back',
+                        piece.uuid .. '_rotation'
                     )
                 end
             end
@@ -490,16 +538,25 @@ function Level:tweenPieceVanish(piece, delay)
         self:tween(
             delay,
             piece,
-            { scaleX = 0, scaleY = 0, rotation = math.pi * 2 },
+            { scaleX = 0, scaleY = 0 },
+            'in-back',
+            piece.uuid .. '_scale'
+        )
+
+        -- 回転
+        self:tween(
+            delay,
+            piece,
+            { rotation = math.pi * 2 },
             'in-back',
             function ()
                 piece.rotation = 0
             end,
-            piece.uuid .. '_scale'
+            piece.uuid .. '_rotation'
         )
 
         -- アルファ値
-        self:tween(
+        local tag = self:tween(
             delay,
             piece.color,
             { [4] = 0 },
@@ -518,8 +575,31 @@ function Level:tweenPieceVanish(piece, delay)
 end
 
 -- 駒が消える演出
-function Level:tween(...)
-    self.timer:tween(...)
+function Level:tween(delay, subject, target, method, after, tag, ...)
+    --[[
+    if type(after) == 'string' then tag, after = after, nil end
+    local timer = self:getTimer(tag)
+    if timer then
+        print(timer.subject, target)
+        timer.target = target
+        timer.method = method
+        timer.after = after or function () end
+        timer.payload = self.timer:__tweenCollectPayload(timer.subject, timer.target, {})
+    else
+        return self.timer:tween(delay, subject, target, method, after, tag, ...)
+    end
+    --]]
+    return self.timer:tween(delay, subject, target, method, after, tag, ...)
+end
+
+-- タイマーを返す
+function Level:getTimer(tag)
+    return self.timer.timers[tag]
+end
+
+-- タイマーがあるかどうか
+function Level:hasTimer(tag)
+    return self:getTimer(tag) ~= nil
 end
 
 return Level

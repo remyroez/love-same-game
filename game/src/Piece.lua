@@ -64,8 +64,12 @@ end
 -- 描画
 function Piece:draw()
     -- スプライトの描画
-    love.graphics.setColor(self.color)
     self:pushTransform(self:left(), self:top())
+    if self.checked then
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.rectangle('fill', 0, 0, self.width, self.height)
+    end
+    love.graphics.setColor(self.color)
     self:drawSprite(self.spriteName)
     self:popTransform()
 end
