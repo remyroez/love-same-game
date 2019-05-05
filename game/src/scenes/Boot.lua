@@ -22,6 +22,12 @@ function Boot:load()
 
     -- スプライトシートの読み込み
     self.spriteSheet = sbss:new('assets/round_nodetailsOutline.xml')
+
+    -- フォント
+    local fontName = 'assets/Kenney Blocks.ttf'
+    self.font16 = lg.newFont(fontName, 16)
+    self.font32 = lg.newFont(fontName, 32)
+    self.font64 = lg.newFont(fontName, 64)
 end
 
 -- 更新

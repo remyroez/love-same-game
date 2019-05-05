@@ -49,6 +49,7 @@ function Title:enteredState(...)
     end
 
     -- 開始演出
+    state.offset = -self.height * 0.5
     state.alpha = 1
     state.timer = Timer()
     state.timer:tween(
@@ -57,10 +58,23 @@ function Title:enteredState(...)
         { alpha = 0 },
         'in-out-cubic',
         function()
+            state.timer:every(
+                0.5,
+                function ()
+                    state.visiblePressAnyKey = not state.visiblePressAnyKey
+                end
+            )
             state.busy = false
         end
     )
+    state.timer:tween(
+        1,
+        state,
+        { offset = 0 },
+        'in-bounce'
+    )
     state.busy = true
+    state.visiblePressAnyKey = true
 end
 
 -- ステート終了
@@ -90,6 +104,22 @@ function Title:draw()
         end
     end
     lg.pop()
+
+    -- タイトル
+    lg.setColor(1, 1, 1, 1)
+    lg.printf(
+        'SAME GAME',
+        self.font64,
+        0,
+        self.height * 0.3 - self.font64:getHeight() * 0.5 + state.offset,
+        self.width,
+        'center'
+    )
+
+    -- キー入力表示
+    if state.visiblePressAnyKey and not state.busy then
+        lg.printf('PRESS ANY KEY', self.font32, 0, self.height * 0.75 - self.font32:getHeight() * 0.5, self.width, 'center')
+    end
 
     -- フェード
     if state.alpha > 0 then
