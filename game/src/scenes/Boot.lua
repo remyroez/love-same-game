@@ -10,7 +10,7 @@ local Boot = Scene:newState 'boot'
 
 -- 次のステートへ
 function Boot:nextState(...)
-    self:gotoState 'game'
+    self:gotoState 'splash'
 end
 
 -- 読み込み
@@ -22,6 +22,15 @@ function Boot:load()
 
     -- スプライトシートの読み込み
     self.spriteSheet = sbss:new('assets/round_nodetailsOutline.xml')
+
+    -- フォント
+    local fontName = 'assets/Kenney Blocks.ttf'
+    self.font16 = lg.newFont(fontName, 16)
+    self.font32 = lg.newFont(fontName, 32)
+    self.font64 = lg.newFont(fontName, 64)
+
+    -- ベストスコア
+    self.best = {}
 end
 
 -- 更新
