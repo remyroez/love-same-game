@@ -209,10 +209,13 @@ function Select:keypressed(key, scancode, isrepeat)
         -- 演出中
     elseif key == '3' then
         self:randomTypes(3)
+        self:playCursor()
     elseif key == '4' then
         self:randomTypes(4)
+        self:playCursor()
     elseif key == '5' then
         self:randomTypes(5)
+        self:playCursor()
     elseif key == 'left' then
         -- レベルの幅
         state.levelWidth = state.levelWidth - 1
@@ -229,6 +232,9 @@ function Select:keypressed(key, scancode, isrepeat)
             'out-elastic',
             'width'
         )
+
+        -- ＳＥ
+        self:playCursor()
     elseif key == 'right' then
         -- レベルの幅
         state.levelWidth = state.levelWidth + 1
@@ -245,6 +251,9 @@ function Select:keypressed(key, scancode, isrepeat)
             'out-elastic',
             'width'
         )
+
+        -- ＳＥ
+        self:playCursor()
     elseif key == 'up' then
         -- レベルの高さを上げる
         state.levelHeight = state.levelHeight + 1
@@ -261,6 +270,9 @@ function Select:keypressed(key, scancode, isrepeat)
             'out-elastic',
             'height'
         )
+
+        -- ＳＥ
+        self:playCursor()
     elseif key == 'down' then
         -- レベルの高さを下げる
         state.levelHeight = state.levelHeight - 1
@@ -277,6 +289,9 @@ function Select:keypressed(key, scancode, isrepeat)
             'out-elastic',
             'height'
         )
+
+        -- ＳＥ
+        self:playCursor()
     elseif key == 'return' then
         state.timer:tween(
             1,
@@ -289,6 +304,10 @@ function Select:keypressed(key, scancode, isrepeat)
             end
         )
         state.busy = true
+
+        -- ＳＥ
+        self.sounds.start:seek(0)
+        self.sounds.start:play()
     end
 end
 
@@ -352,6 +371,12 @@ end
 -- レベルタイトルの取得
 function Select:getLevelTitle()
     return '' .. #self.state.levelTypes .. '-' .. self.state.levelWidth .. '-' .. self.state.levelHeight
+end
+
+-- カーソルＳＥ再生
+function Select:playCursor()
+    self.sounds.cursor:seek(0)
+    self.sounds.cursor:play()
 end
 
 return Select

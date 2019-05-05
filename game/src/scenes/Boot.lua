@@ -43,7 +43,9 @@ function Boot:load()
 
     -- ＳＥ
     local sounds = {
-        gameover = 'Beat ident.ogg'
+        gameover = 'Beat ident.ogg',
+        start = 'upgrade1.ogg',
+        cursor = 'coin5.ogg',
     }
     self.sounds = {}
     for name, path in pairs(sounds) do

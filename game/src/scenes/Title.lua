@@ -144,6 +144,10 @@ function Title:keypressed(key, scancode, isrepeat)
             end
         )
         self.state.busy = true
+
+        -- ＳＥ
+        self.sounds.start:seek(0)
+        self.sounds.start:play()
     end
 end
 

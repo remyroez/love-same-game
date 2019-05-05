@@ -213,6 +213,10 @@ function Game:keypressed(key, scancode, isrepeat)
         )
         self.state.busy = true
 
+        -- ＳＥ
+        self.sounds.start:seek(0)
+        self.sounds.start:play()
+
     elseif not self.state.dialog and key == 'return' then
         -- 終了演出
         self.state.dialog = true
@@ -264,6 +268,10 @@ function Game:keypressed(key, scancode, isrepeat)
                     self.sounds.gameover:play()
                 end
             )
+
+            -- ＳＥ
+            self.sounds.start:seek(0)
+            self.sounds.start:play()
         elseif key == 'n' then
             -- 続ける
             self.state.busy = true
@@ -280,6 +288,10 @@ function Game:keypressed(key, scancode, isrepeat)
                     self.musics.ingame:setVolume(0.5)
                 end
             )
+
+            -- ＳＥ
+            self.sounds.start:seek(0)
+            self.sounds.start:play()
         end
     else
         self.state.level:keypressed(key, scancode, isrepeat)
