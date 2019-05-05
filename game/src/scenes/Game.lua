@@ -11,21 +11,12 @@ local Level = require 'Level'
 -- ゲーム
 local Game = Scene:newState 'game'
 
--- 駒のタイプ
-local pieceTypes = {
-    { name = 'rabbit', spriteName = 'rabbit.png' },
-    { name = 'duck', spriteName = 'duck.png' },
-    { name = 'pig', spriteName = 'pig.png' },
-    { name = 'monkey', spriteName = 'monkey.png' },
-    { name = 'giraffe', spriteName = 'giraffe.png' },
-}
-
 -- 読み込み
 function Game:load()
 end
 
 -- ステート開始
-function Game:enteredState(path, ...)
+function Game:enteredState(width, height, pieceTypes, ...)
     -- 親
     Scene.enteredState(self, ...)
 
@@ -33,8 +24,9 @@ function Game:enteredState(path, ...)
     local state = self.state
 
     -- レベル
+    state.pieceTypes = pieceTypes or {}
     state.level = Level(self.spriteSheet, 0, 0, nil, self.height - (32 + 32 + 8 * 2))
-    state.level:load(20, 10, pieceTypes)
+    state.level:load(width, height, state.pieceTypes)
     state.level.x = (state.level.width - state.level:totalWidth()) * 0.5
     state.level.y = (state.level.height - state.level:totalHeight()) * 0.5 + 32
 end
@@ -69,8 +61,8 @@ function Game:draw()
     local size = 32
     local range = 100
     lg.push()
-    lg.translate((self.width - (#pieceTypes - 1) * range) * 0.5 - size, self.height - size - 8)
-    for i, pieceType in ipairs(pieceTypes) do
+    lg.translate((self.width - (#self.state.pieceTypes - 1) * range) * 0.5 - size, self.height - size - 8)
+    for i, pieceType in ipairs(self.state.pieceTypes) do
         local x = (i - 1) * range
         self:drawPieceSprite(pieceType.spriteName, x, 0, size)
         lg.printf(self.state.level.counts[pieceType.name], x + size + 8, (size - 12) * 0.5, self.width, 'left')

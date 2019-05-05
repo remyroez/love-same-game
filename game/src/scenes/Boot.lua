@@ -28,6 +28,9 @@ function Boot:load()
     self.font16 = lg.newFont(fontName, 16)
     self.font32 = lg.newFont(fontName, 32)
     self.font64 = lg.newFont(fontName, 64)
+
+    -- ベストスコア
+    self.best = {}
 end
 
 -- 更新

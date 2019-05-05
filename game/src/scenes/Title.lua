@@ -22,7 +22,7 @@ local spriteNames = {
 
 -- 次のステートへ
 function Title:nextState(...)
-    self:gotoState 'game'
+    self:gotoState 'select'
 end
 
 -- 読み込み
