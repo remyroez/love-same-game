@@ -12,11 +12,67 @@ local Select = Scene:newState 'select'
 
 -- 駒のタイプ
 local pieceTypes = {
-    { name = 'rabbit', spriteName = 'rabbit.png' },
-    { name = 'duck', spriteName = 'duck.png' },
+    -- brown
+    {
+        { name = 'bear', spriteName = 'bear.png' },
+        { name = 'buffalo', spriteName = 'buffalo.png' },
+        { name = 'goat', spriteName = 'goat.png' },
+        { name = 'horse', spriteName = 'horse.png' },
+        { name = 'monkey', spriteName = 'monkey.png' },
+        { name = 'moose', spriteName = 'moose.png' },
+        { name = 'owl', spriteName = 'owl.png' },
+        { name = 'sloth', spriteName = 'sloth.png' },
+        { name = 'walrus', spriteName = 'walrus.png' },
+    },
+
+    -- yellow
+    {
+        { name = 'chick', spriteName = 'chick.png' },
+        { name = 'giraffe', spriteName = 'giraffe.png' },
+    },
+
+    -- white
+    {
+        { name = 'chicken', spriteName = 'chicken.png' },
+        { name = 'dog', spriteName = 'dog.png' },
+        { name = 'elephant', spriteName = 'elephant.png' },
+        { name = 'panda', spriteName = 'panda.png' },
+        { name = 'rabbit', spriteName = 'rabbit.png' },
+        { name = 'rhino', spriteName = 'rhino.png' },
+    },
+
+    -- monochrome
+    {
+        { name = 'cow', spriteName = 'cow.png' },
+        { name = 'gorilla', spriteName = 'gorilla.png' },
+        { name = 'zebra', spriteName = 'zebra.png' },
+    },
+
+    -- green
+    {
+        { name = 'crocodile', spriteName = 'crocodile.png' },
+        { name = 'duck', spriteName = 'duck.png' },
+        { name = 'frog', spriteName = 'frog.png' },
+        { name = 'snake', spriteName = 'snake.png' },
+    },
+
+    -- blue
+    {
+        { name = 'hippo', spriteName = 'hippo.png' },
+        { name = 'narwhal', spriteName = 'narwhal.png' },
+    },
+
+    -- red
+    { name = 'parrot', spriteName = 'parrot.png' },
+
+    -- black
+    {
+        { name = 'penguin', spriteName = 'penguin.png' },
+        { name = 'whale', spriteName = 'whale.png' },
+    },
+
+    -- pink
     { name = 'pig', spriteName = 'pig.png' },
-    { name = 'monkey', spriteName = 'monkey.png' },
-    { name = 'giraffe', spriteName = 'giraffe.png' },
 }
 
 -- 次のステートへ
@@ -368,7 +424,12 @@ function Select:randomTypes(num)
 
     -- ランダムに抜き出して選択
     for i = 1, num do
-        table.insert(self.state.levelTypes, table.remove(types, love.math.random(#types)))
+        local t = table.remove(types, love.math.random(#types))
+        if t[1] ~= nil then
+            -- 配列だったので更に選ぶ
+            t = t[love.math.random(#t)]
+        end
+        table.insert(self.state.levelTypes, t)
     end
 
     -- 演出
