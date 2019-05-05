@@ -71,6 +71,9 @@ function Select:enteredState(width, height, pieceTypes, ...)
     if pieceTypes == nil then
         self:randomTypes(5)
     end
+
+    -- ＢＧＭ
+    self.musics.outgame:play()
 end
 
 -- ステート終了
@@ -281,6 +284,7 @@ function Select:keypressed(key, scancode, isrepeat)
             { alpha = 1 },
             'in-out-cubic',
             function()
+                self.musics.outgame:stop()
                 self:nextState(state.levelWidth, state.levelHeight, state.levelTypes)
             end
         )

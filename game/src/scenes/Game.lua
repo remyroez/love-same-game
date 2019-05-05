@@ -51,6 +51,8 @@ function Game:enteredState(width, height, pieceTypes, ...)
         { alpha = 0 },
         'in-out-cubic',
         function()
+            self.musics.ingame:setVolume(0.5)
+            self.musics.ingame:play()
             state.busy = false
         end
     )
@@ -113,6 +115,11 @@ function Game:update(dt)
                     self.state.busy = false
                 end
             )
+
+            -- ＢＧＭ，ＳＥ
+            self.musics.ingame:stop()
+            self.sounds.gameover:seek(0)
+            self.sounds.gameover:play()
         end
     end
 end
@@ -222,8 +229,14 @@ function Game:keypressed(key, scancode, isrepeat)
                 self.state.busy = false
             end
         )
+
+        -- ＢＧＭ
+        self.musics.ingame:setVolume(0.25)
+
     elseif self.state.dialog then
+        -- ダイアログ
         if key == 'y' then
+            -- 終了する
             self.state.busy = true
             self.state.timer:tween(
                 1,
@@ -244,9 +257,15 @@ function Game:keypressed(key, scancode, isrepeat)
                             self.state.busy = false
                         end
                     )
+
+                    -- ＢＧＭ，ＳＥ
+                    self.musics.ingame:stop()
+                    self.sounds.gameover:seek(0)
+                    self.sounds.gameover:play()
                 end
             )
         elseif key == 'n' then
+            -- 続ける
             self.state.busy = true
             self.state.timer:tween(
                 1,
@@ -258,6 +277,7 @@ function Game:keypressed(key, scancode, isrepeat)
                     self.state.level.busy = false
                     self.state.dialog = false
                     self.state.busy = false
+                    self.musics.ingame:setVolume(0.5)
                 end
             )
         end

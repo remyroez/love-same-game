@@ -75,6 +75,9 @@ function Title:enteredState(...)
     )
     state.busy = true
     state.visiblePressAnyKey = true
+
+    -- ＢＧＭ
+    self.musics.outgame:play()
 end
 
 -- ステート終了
