@@ -41,13 +41,6 @@ local pieceTypes = {
         { name = 'rhino', spriteName = 'rhino.png' },
     },
 
-    -- monochrome
-    {
-        { name = 'cow', spriteName = 'cow.png' },
-        { name = 'gorilla', spriteName = 'gorilla.png' },
-        { name = 'zebra', spriteName = 'zebra.png' },
-    },
-
     -- green
     {
         { name = 'crocodile', spriteName = 'crocodile.png' },
@@ -69,6 +62,9 @@ local pieceTypes = {
     {
         { name = 'penguin', spriteName = 'penguin.png' },
         { name = 'whale', spriteName = 'whale.png' },
+        { name = 'cow', spriteName = 'cow.png' },
+        { name = 'gorilla', spriteName = 'gorilla.png' },
+        { name = 'zebra', spriteName = 'zebra.png' },
     },
 
     -- pink
