@@ -77,6 +77,7 @@ function Game:enteredState(width, height, pieceTypes, ...)
     state.alpha3 = 0
     state.dialog = false
     state.clear = false
+    state.visiblePressAnyKey = true
 
     -- ＢＧＭ
     self.musics.ingame:setVolume(0.5)
@@ -122,6 +123,16 @@ function Game:update(dt)
             self.musics.ingame:stop()
             self.sounds.gameover:seek(0)
             self.sounds.gameover:play()
+
+            -- キー入力表示
+            self.state.visiblePressAnyKey = true
+            self.state.timer:every(
+                0.5,
+                function ()
+                    self.state.visiblePressAnyKey = not self.state.visiblePressAnyKey
+                end,
+                'press'
+            )
         end
     end
 end
@@ -148,11 +159,15 @@ function Game:draw()
         if self.state.dialog then
             -- ダイアログ
             lg.printf('DO YOU FINISH THE GAME?', self.font32, 0, self.height * 0.45 - self.font32:getHeight() * 0.5, self.width, 'center')
-            lg.printf('Y/N', self.font16, 0, self.height * 0.55 - self.font16:getHeight() * 0.5, self.width, 'center')
+            if not self.state.busy and state.visiblePressAnyKey then
+                lg.printf('Y/n', self.font16, 0, self.height * 0.55 - self.font16:getHeight() * 0.5, self.width, 'center')
+            end
         elseif self.state.clear then
             -- クリア
             lg.printf('LEVEL CLEAR', self.font64, 0, self.height * 0.45 - self.font64:getHeight() * 0.5, self.width, 'center')
-            lg.printf('PRESS ANY KEY', self.font16, 0, self.height * 0.6 - self.font16:getHeight() * 0.5, self.width, 'center')
+            if not self.state.busy and state.visiblePressAnyKey then
+                lg.printf('PRESS ANY KEY', self.font16, 0, self.height * 0.6 - self.font16:getHeight() * 0.5, self.width, 'center')
+            end
         end
     end
 
@@ -226,11 +241,20 @@ function Game:keypressed(key, scancode, isrepeat)
         self.state.level.busy = true
         self.state.level:uncheckPieces()
         self.state.timer:tween(
-            1,
+            0.5,
             self.state,
             { alpha2 = 0.5, alpha3 = 1 },
             'in-out-cubic',
             function()
+                -- キー入力表示
+                self.state.visiblePressAnyKey = true
+                self.state.timer:every(
+                    0.5,
+                    function ()
+                        self.state.visiblePressAnyKey = not self.state.visiblePressAnyKey
+                    end,
+                    'press'
+                )
                 -- 操作可能
                 self.state.busy = false
             end
@@ -241,11 +265,11 @@ function Game:keypressed(key, scancode, isrepeat)
 
     elseif self.state.dialog then
         -- ダイアログ
-        if key == 'y' then
+        if key == 'y' or key == 'return' or key == 'space' then
             -- 終了する
             self.state.busy = true
             self.state.timer:tween(
-                1,
+                0.5,
                 self.state,
                 { alpha3 = 0 },
                 'in-out-cubic',
@@ -268,6 +292,16 @@ function Game:keypressed(key, scancode, isrepeat)
                     self.musics.ingame:stop()
                     self.sounds.gameover:seek(0)
                     self.sounds.gameover:play()
+
+                    -- キー入力表示
+                    self.state.visiblePressAnyKey = true
+                    self.state.timer:every(
+                        0.5,
+                        function ()
+                            self.state.visiblePressAnyKey = not self.state.visiblePressAnyKey
+                        end,
+                        'press'
+                    )
                 end
             )
 
@@ -278,7 +312,7 @@ function Game:keypressed(key, scancode, isrepeat)
             -- 続ける
             self.state.busy = true
             self.state.timer:tween(
-                1,
+                0.5,
                 self.state,
                 { alpha2 = 0, alpha3 = 0 },
                 'in-out-cubic',

@@ -292,7 +292,7 @@ function Select:keypressed(key, scancode, isrepeat)
 
         -- ＳＥ
         self:playCursor()
-    elseif key == 'return' then
+    elseif key == 'return' or key == 'space' then
         state.timer:tween(
             1,
             state,
