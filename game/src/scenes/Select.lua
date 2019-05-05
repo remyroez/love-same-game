@@ -40,16 +40,11 @@ function Select:enteredState(...)
     state.w, state.h = state.w * 0.5, state.h * 0.5
     state.sprites = {}
 
-    -- レベル設定
-    state.levelTypes = {}
-    state.levelWidth = 20
-    state.levelHeight = 10
-    self:randomTypes(5)
-
     -- 開始演出
     state.offset = -self.height * 0.5
     state.offsetX = 0
     state.offsetY = 0
+    state.offsetT = 0
     state.alpha = 1
     state.timer = Timer()
     state.timer:tween(
@@ -68,6 +63,12 @@ function Select:enteredState(...)
         'in-bounce'
     )
     state.busy = true
+
+    -- レベル設定
+    state.levelTypes = {}
+    state.levelWidth = 20
+    state.levelHeight = 10
+    self:randomTypes(5)
 end
 
 -- ステート終了
@@ -104,7 +105,7 @@ function Select:draw()
         self:drawPieceSprite(
             pieceType.spriteName,
             (self.width - range * (#state.levelTypes - 1) - state.w) * 0.5 + range * (i - 1),
-            self.height * 0.75 - state.h * 0.5,
+            self.height * 0.75 - state.h * 0.5 + state.offsetT,
             state.w,
             state.h
         )
@@ -221,7 +222,7 @@ function Select:keypressed(key, scancode, isrepeat)
             state,
             { offsetX = 0 },
             'out-elastic',
-            'select'
+            'width'
         )
     elseif key == 'right' then
         -- レベルの幅
@@ -237,7 +238,7 @@ function Select:keypressed(key, scancode, isrepeat)
             state,
             { offsetX = 0 },
             'out-elastic',
-            'select'
+            'width'
         )
     elseif key == 'up' then
         -- レベルの高さを上げる
@@ -253,7 +254,7 @@ function Select:keypressed(key, scancode, isrepeat)
             state,
             { offsetY = 0 },
             'out-elastic',
-            'select'
+            'height'
         )
     elseif key == 'down' then
         -- レベルの高さを下げる
@@ -269,7 +270,7 @@ function Select:keypressed(key, scancode, isrepeat)
             state,
             { offsetY = 0 },
             'out-elastic',
-            'select'
+            'height'
         )
     elseif key == 'return' then
         state.timer:tween(
@@ -330,6 +331,16 @@ function Select:randomTypes(num)
     for i = 1, num do
         table.insert(self.state.levelTypes, table.remove(types, love.math.random(#types)))
     end
+
+    -- 演出
+    self.state.offsetT = 64
+    self.state.timer:tween(
+        0.2,
+        self.state,
+        { offsetT = 0 },
+        'out-elastic',
+        'type'
+    )
 end
 
 -- レベルタイトルの取得
