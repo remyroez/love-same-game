@@ -230,7 +230,9 @@ end
 
 -- キー入力
 function Game:keypressed(key, scancode, isrepeat)
-    if self.state.busy then
+    if isrepeat then
+        -- キーリピートは受け付けない
+    elseif self.state.busy then
         -- 演出中
     elseif self.state.clear then
         -- クリア

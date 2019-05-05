@@ -57,6 +57,9 @@ function Boot:load()
 
     -- ベストスコア
     self.best = {}
+
+    -- キーリピート有効
+    love.keyboard.setKeyRepeat(true)
 end
 
 -- 更新

@@ -277,22 +277,22 @@ function Select:keypressed(key, scancode, isrepeat)
     local state = self.state
     if state.busy then
         -- 演出中
-    elseif key == '3' then
+    elseif key == '3' and not isrepeat then
         self:randomTypes(3)
         self:playCursor()
-    elseif key == '4' then
+    elseif key == '4' and not isrepeat then
         self:randomTypes(4)
         self:playCursor()
-    elseif key == '5' then
+    elseif key == '5' and not isrepeat then
         self:randomTypes(5)
         self:playCursor()
-    elseif key == '6' then
+    elseif key == '6' and not isrepeat then
         self:randomTypes(6)
         self:playCursor()
-    elseif key == '7' then
+    elseif key == '7' and not isrepeat then
         self:randomTypes(7)
         self:playCursor()
-    elseif key == '8' then
+    elseif key == '8' and not isrepeat then
         self:randomTypes(8)
         self:playCursor()
     elseif key == 'left' then
@@ -371,7 +371,7 @@ function Select:keypressed(key, scancode, isrepeat)
 
         -- ＳＥ
         self:playCursor()
-    elseif key == 'return' or key == 'space' then
+    elseif (key == 'return' or key == 'space') and not isrepeat then
         state.timer:tween(
             1,
             state,
