@@ -197,8 +197,21 @@ function Level:update(dt)
         elseif piece.checked then
             -- チェック済み
         else
+            -- 一旦すべてチェックを外す
             self:uncheckPieces()
+
+            -- 同じタイプの駒をチェック
             self.removalPieceCoords = self:pickSamePieceCoords(x, y)
+
+            -- チェック演出
+            if #self.removalPieceCoords > 1 then
+                for _, coord in ipairs(self.removalPieceCoords) do
+                    local p = self:getPiece(unpack(coord))
+                    if p then
+                        p:tweenCheck(0.25, true)
+                    end
+                end
+            end
             self.checked = true
         end
     end
@@ -331,6 +344,7 @@ function Level:uncheckPieces()
     for i, line in ipairs(self.pieces) do
         for j, piece in ipairs(line) do
             piece.checked = false
+            piece:cancelCheck()
         end
     end
     self.removalPieceCoords = {}

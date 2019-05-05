@@ -52,6 +52,8 @@ function Piece:initialize(args)
     -- 今のスケールを保存
     self.baseScaleX = self.scaleX
     self.baseScaleY = self.scaleY
+    self.offsetScaleX = 0
+    self.offsetScaleY = 0
 
     -- デバッグモード
     self.debugMode = args.debugMode or false
@@ -69,15 +71,23 @@ end
 
 -- 描画
 function Piece:draw()
-    -- スプライトの描画
+    -- チェック背景の描画
     self:pushTransform(self:left(), self:top())
     if self.checked then
-        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.setColor(1, 1, 1, 0.75)
         love.graphics.rectangle('fill', 0, 0, self.width, self.height)
     end
+    self:popTransform()
+
+    -- スプライトの描画
+    local sx, sy = self.scaleX, self.scaleY
+    self.scaleX = self.scaleX + self.offsetScaleX
+    self.scaleY = self.scaleY + self.offsetScaleY
+    self:pushTransform(self:left(), self:top())
     love.graphics.setColor(self.color)
     self:drawSprite(self.spriteName)
     self:popTransform()
+    self.scaleX, self.scaleY = sx, sy
 end
 
 -- デバッグモードの設定
@@ -98,6 +108,30 @@ end
 -- タイマーがあるかどうか
 function Piece:hasTimer(tag)
     return self:getTimer(tag) ~= nil
+end
+
+-- チェック演出
+function Piece:tweenCheck(delay, c)
+    c = c == nil and true or c
+    self:tween(
+        delay,
+        self,
+        { offsetScaleX = c and self.baseScaleX * 0.25 or 0, offsetScaleY = c and self.baseScaleY * 0.25 or 0 },
+        c and 'out-quint' or 'in-quint',
+        function ()
+            self:tweenCheck(delay, not c)
+        end,
+        c and 'in' or 'out'
+    )
+    return thisTag
+end
+
+-- チェック演出キャンセル
+function Piece:cancelCheck()
+    self.timer:cancel('in')
+    self.timer:cancel('out')
+    self.offsetScaleX = 0
+    self.offsetScaleY = 0
 end
 
 return Piece
