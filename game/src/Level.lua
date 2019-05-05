@@ -108,13 +108,14 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
             table.insert(
                 line,
                 Piece {
-                    x = (i - 1) * self.pieceWidth,
-                    y = (self.numVertical - j) * self.pieceHeight,
+                    x = -self.pieceWidth,
+                    y = (self.numVertical) * self.pieceHeight,
                     width = self.pieceWidth,
                     height = self.pieceHeight,
                     type = pieceType.name,
                     spriteSheet = self.spriteSheet,
                     spriteName = pieceType.spriteName,
+                    color = { 1, 1, 1, 0 }
                 }
             )
         end
@@ -129,6 +130,31 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
 
     -- 駒のタイプのカウント
     self:countPieceTypes()
+
+    -- 開始演出
+    self:tweenPiecePosition(1, true)
+    for i, line in ipairs(self.pieces) do
+        for j, piece in ipairs(line) do
+            piece.scaleX = 0
+            piece.scaleY = 0
+            -- アルファ値
+            self:tween(
+                1,
+                piece.color,
+                { [4] = 1 },
+                'out-back',
+                piece.uuid .. '_color'
+            )
+            -- スケール
+            self:tween(
+                1,
+                piece,
+                { scaleX = piece.baseScaleX, scaleY = piece.baseScaleY },
+                'out-back',
+                piece.uuid .. '_scale'
+            )
+        end
+    end
 end
 
 -- 破棄
@@ -141,19 +167,21 @@ function Level:update(dt)
     self.timer:update(dt)
 
     -- マウスカーソル下の駒にチェックを入れる
-    local x, y = self:getMousePosition()
-    local piece = self:getPiece(x, y)
-    if piece == nil then
-        -- 範囲外
-        if self.checked then
+    if not self.busy then
+        local x, y = self:getMousePosition()
+        local piece = self:getPiece(x, y)
+        if piece == nil then
+            -- 範囲外
+            if self.checked then
+                self:uncheckPieces()
+            end
+        elseif piece.checked then
+            -- チェック済み
+        else
             self:uncheckPieces()
+            self.removalPieceCoords = self:pickSamePieceCoords(x, y)
+            self.checked = true
         end
-    elseif piece.checked then
-        -- チェック済み
-    else
-        self:uncheckPieces()
-        self.removalPieceCoords = self:pickSamePieceCoords(x, y)
-        self.checked = true
     end
 end
 
@@ -442,7 +470,7 @@ function Level:countPieceTypes()
 end
 
 -- 駒の位置を移動させる
-function Level:tweenPiecePosition(delay)
+function Level:tweenPiecePosition(delay, busy)
     delay = delay or 0
 
     -- 各駒へ座標設定
@@ -515,13 +543,14 @@ function Level:tweenPiecePosition(delay)
     end
 
     -- 時間経過まで操作できないようにする
-    if delay > 0 then
-        --self.busy = true
+    if delay > 0 and busy then
+        self.busy = true
         self.timer:after(
             delay,
             function ()
                 self.busy = false
-            end
+            end,
+            'busy'
         )
     end
 end
