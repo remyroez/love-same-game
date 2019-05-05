@@ -43,6 +43,7 @@ function Level:initialize(spriteSheet, x, y, width, height)
     -- 駒情報
     self.pieceTypes = nil
     self.pieces = {}
+    self.allPieces = {}
     self.lastEnviroments = {}
     self.numHorizontal = 20
     self.numVertical = 10
@@ -105,19 +106,18 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
         local line = {}
         for j = 1, self.numVertical do
             local pieceType = self.pieceTypes[love.math.random(#self.pieceTypes)]
-            table.insert(
-                line,
-                Piece {
-                    x = -self.pieceWidth,
-                    y = (self.numVertical) * self.pieceHeight,
-                    width = self.pieceWidth,
-                    height = self.pieceHeight,
-                    type = pieceType.name,
-                    spriteSheet = self.spriteSheet,
-                    spriteName = pieceType.spriteName,
-                    color = { 1, 1, 1, 0 }
-                }
-            )
+            local piece = Piece {
+                x = -self.pieceWidth,
+                y = (self.numVertical) * self.pieceHeight,
+                width = self.pieceWidth,
+                height = self.pieceHeight,
+                type = pieceType.name,
+                spriteSheet = self.spriteSheet,
+                spriteName = pieceType.spriteName,
+                color = { 1, 1, 1, 0 }
+            }
+            table.insert(self.allPieces, piece)
+            table.insert(line, piece)
         end
         table.insert(self.pieces, line)
     end
@@ -138,20 +138,20 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
             piece.scaleX = 0
             piece.scaleY = 0
             -- アルファ値
-            self:tween(
+            piece:tween(
                 1,
                 piece.color,
                 { [4] = 1 },
                 'out-back',
-                piece.uuid .. '_color'
+                'color'
             )
             -- スケール
-            self:tween(
+            piece:tween(
                 1,
                 piece,
                 { scaleX = piece.baseScaleX, scaleY = piece.baseScaleY },
                 'out-back',
-                piece.uuid .. '_scale'
+                'scale'
             )
         end
     end
@@ -160,11 +160,28 @@ end
 -- 破棄
 function Level:destroy()
     self.timer:destroy()
+    for _, piece in ipairs(self.allPieces) do
+        piece:destroy()
+    end
+    self.allPieces = {}
+    self.piece = {}
 end
 
 -- 更新
 function Level:update(dt)
     self.timer:update(dt)
+
+    -- 駒の描画
+    for i, line in ipairs(self.pieces) do
+        for j, piece in ipairs(line) do
+            piece:update(dt)
+        end
+    end
+
+    -- 消える駒の描画
+    for _, piece in ipairs(self.vanishingPieces) do
+        piece:update(dt)
+    end
 
     -- マウスカーソル下の駒にチェックを入れる
     if not self.busy then
@@ -483,33 +500,33 @@ function Level:tweenPiecePosition(delay, busy)
                 piece.x, piece.y = x, y
             else
                 -- Ｘ方向
-                if piece.x ~= x or self:hasTimer(piece.uuid .. '_x') then
-                    self:tween(
+                if piece.x ~= x or piece:hasTimer(piece.uuid .. '_x') then
+                    piece:tween(
                         delay,
                         piece,
                         { x = x },
                         (x > piece.x) and 'out-cubic' or 'in-out-cubic',
-                        piece.uuid .. '_x'
+                        'x'
                     )
                 end
                 -- Ｙ方向
-                if piece.y ~= y or self:hasTimer(piece.uuid .. '_y') then
-                    self:tween(
+                if piece.y ~= y or piece:hasTimer(piece.uuid .. '_y') then
+                    piece:tween(
                         delay,
                         piece,
                         { y = y },
                         (y > piece.y) and 'in-bounce' or 'out-back',
-                        piece.uuid .. '_y'
+                        'y'
                     )
                 end
                 -- アルファ値
-                if piece.color[4] ~= 1 or self:hasTimer(piece.uuid .. '_color') then
-                    self:tween(
+                if piece.color[4] ~= 1 or piece:hasTimer(piece.uuid .. '_color') then
+                    piece:tween(
                         delay,
                         piece.color,
                         { [4] = 1 },
                         'out-elastic',
-                        piece.uuid .. '_color'
+                        'color'
                     )
                     for i, vp in ipairs(self.vanishingPieces) do
                         if vp == piece then
@@ -519,23 +536,23 @@ function Level:tweenPiecePosition(delay, busy)
                     end
                 end
                 -- スケール
-                if piece.scaleX ~= piece.baseScaleX or piece.scaleY ~= piece.baseScaleY or self:hasTimer(piece.uuid .. '_scale') then
-                    self:tween(
+                if piece.scaleX ~= piece.baseScaleX or piece.scaleY ~= piece.baseScaleY or piece:hasTimer(piece.uuid .. '_scale') then
+                    piece:tween(
                         delay,
                         piece,
                         { scaleX = piece.baseScaleX, scaleY = piece.baseScaleY },
                         'out-elastic',
-                        piece.uuid .. '_scale'
+                        'scale'
                     )
                 end
                 -- 回転
-                if piece.rotation > 0 or piece.rotation < 0 or self:hasTimer(piece.uuid .. '_rotation') then
-                    self:tween(
+                if piece.rotation > 0 or piece.rotation < 0 or piece:hasTimer(piece.uuid .. '_rotation') then
+                    piece:tween(
                         delay,
                         piece,
                         { rotation = 0 },
                         'in-back',
-                        piece.uuid .. '_rotation'
+                        'rotation'
                     )
                 end
             end
@@ -564,16 +581,16 @@ function Level:tweenPieceVanish(piece, delay)
         table.insert(self.vanishingPieces, piece)
 
         -- スケール
-        self:tween(
+        piece:tween(
             delay,
             piece,
             { scaleX = 0, scaleY = 0 },
             'in-back',
-            piece.uuid .. '_scale'
+            'scale'
         )
 
         -- 回転
-        self:tween(
+        piece:tween(
             delay,
             piece,
             { rotation = math.pi * 2 },
@@ -581,11 +598,11 @@ function Level:tweenPieceVanish(piece, delay)
             function ()
                 piece.rotation = 0
             end,
-            piece.uuid .. '_rotation'
+            'rotation'
         )
 
         -- アルファ値
-        local tag = self:tween(
+        piece:tween(
             delay,
             piece.color,
             { [4] = 0 },
@@ -598,27 +615,14 @@ function Level:tweenPieceVanish(piece, delay)
                     end
                 end
             end,
-            piece.uuid .. '_color'
+            'color'
         )
     end
 end
 
--- 駒が消える演出
-function Level:tween(delay, subject, target, method, after, tag, ...)
-    --[[
-    if type(after) == 'string' then tag, after = after, nil end
-    local timer = self:getTimer(tag)
-    if timer then
-        print(timer.subject, target)
-        timer.target = target
-        timer.method = method
-        timer.after = after or function () end
-        timer.payload = self.timer:__tweenCollectPayload(timer.subject, timer.target, {})
-    else
-        return self.timer:tween(delay, subject, target, method, after, tag, ...)
-    end
-    --]]
-    return self.timer:tween(delay, subject, target, method, after, tag, ...)
+-- 演出
+function Level:tween(...)
+    return self.timer:tween(...)
 end
 
 -- タイマーを返す

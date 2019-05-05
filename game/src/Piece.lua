@@ -1,6 +1,9 @@
 
 local class = require 'middleclass'
 
+-- クラス
+local Timer = require 'Timer'
+
 -- エイリアス
 local lg = love.graphics
 
@@ -28,6 +31,7 @@ function Piece:initialize(args)
     self.color = args.color or { 1, 1, 1, 1 }
     self.checked = false
     self.uuid = uuid()
+    self.timer = Timer()
 
     -- SpriteRenderer 初期化
     self:initializeSpriteRenderer(args.spriteSheet)
@@ -55,10 +59,12 @@ end
 
 -- 破棄
 function Piece:destroy()
+    self.timer:destroy()
 end
 
 -- 更新
 function Piece:update(dt)
+    self.timer:update(dt)
 end
 
 -- 描画
@@ -77,6 +83,21 @@ end
 -- デバッグモードの設定
 function Piece:setDebugMode(mode)
     self.debugMode = mode or false
+end
+
+-- 演出
+function Piece:tween(...)
+    return self.timer:tween(...)
+end
+
+-- タイマーを返す
+function Piece:getTimer(tag)
+    return self.timer.timers[tag]
+end
+
+-- タイマーがあるかどうか
+function Piece:hasTimer(tag)
+    return self:getTimer(tag) ~= nil
 end
 
 return Piece
