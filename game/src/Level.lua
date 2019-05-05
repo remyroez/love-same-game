@@ -418,7 +418,7 @@ function Level:removeSamePieces(x, y, save)
     save = save == nil and true or save
 
     -- 同じタイプの駒を探す
-    local coords = self.removalPieceCoords -- self:pickSamePieceCoords(x, y)
+    local coords = self.removalPieceCoords
 
     -- チェックを外す
     self:uncheckPieces()
@@ -672,19 +672,21 @@ function Level:tweenPieceVanish(piece, delay)
     end
 end
 
--- 演出
-function Level:tween(...)
-    return self.timer:tween(...)
-end
+-- 選択中の駒の情報を返す
+function Level:getSelectedPieceInfo()
+    local pieceType
+    local pieceNum = #self.removalPieceCoords
+    local score = 0
 
--- タイマーを返す
-function Level:getTimer(tag)
-    return self.timer.timers[tag]
-end
+    if pieceNum > 1 then
+        local piece = self:getPiece(unpack(self.removalPieceCoords[1]))
+        if piece then
+            pieceType = piece.type
+        end
+        score = math.pow(pieceNum - 2, 2)
+    end
 
--- タイマーがあるかどうか
-function Level:hasTimer(tag)
-    return self:getTimer(tag) ~= nil
+    return pieceType, pieceNum, score
 end
 
 return Level

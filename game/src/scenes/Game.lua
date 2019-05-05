@@ -183,6 +183,22 @@ function Game:draw()
         -- 得点
         lg.setColor(1, 1, 1, 1)
         lg.printf(self.state.level.score, self.font64, 0, -self.font32:getHeight() * 0.5 + 8, self.width, 'center')
+
+        -- 選択中の駒
+        local pieceTypeName, pieceNum, score = self.state.level:getSelectedPieceInfo()
+        local spriteName
+        for _, t in ipairs(self.state.pieceTypes) do
+            if t.name == pieceTypeName then
+                spriteName = t.spriteName
+            end
+        end
+        if spriteName then
+            lg.setColor(1, 1, 1, 1)
+            lg.printf('SELECTED', self.font16, -8, 0, self.width, 'right')
+            lg.printf(pieceNum, self.font32, -8, self.font16:getHeight() * 0.5 + 4, self.width, 'right')
+            self:drawPieceSprite(spriteName, self.width - (self.font32:getWidth(pieceNum) + 16) - 32, self.font16:getHeight(), 32)
+            lg.printf(' (+' .. score .. ' pts.)', self.font16, -8, self.font16:getHeight() + 32, self.width, 'right')
+        end
     end
     lg.pop()
 
