@@ -290,8 +290,8 @@ function Game:keypressed(key, scancode, isrepeat)
             )
 
             -- ＳＥ
-            self.sounds.remove:seek(0)
-            self.sounds.remove:play()
+            self.sounds.cancel:seek(0)
+            self.sounds.cancel:play()
         end
     else
         self.state.level:keypressed(key, scancode, isrepeat)
