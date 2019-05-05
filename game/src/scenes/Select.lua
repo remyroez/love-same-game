@@ -53,6 +53,12 @@ function Select:enteredState(width, height, pieceTypes, ...)
         { alpha = 0 },
         'in-out-cubic',
         function()
+            state.timer:every(
+                0.5,
+                function ()
+                    state.visiblePressAnyKey = not state.visiblePressAnyKey
+                end
+            )
             state.busy = false
         end
     )
@@ -63,6 +69,7 @@ function Select:enteredState(width, height, pieceTypes, ...)
         'in-bounce'
     )
     state.busy = true
+    state.visiblePressAnyKey = true
 
     -- レベル設定
     state.levelWidth = width or 20
@@ -115,14 +122,16 @@ function Select:draw()
             state.h
         )
     end
-    lg.printf(
-        '3/4/5',
-        self.font16,
-        0,
-        self.height * 0.85 - self.font16:getHeight() * 0.5,
-        self.width,
-        'center'
-    )
+    if state.visiblePressAnyKey and not state.busy then
+        lg.printf(
+            '3/4/5',
+            self.font16,
+            0,
+            self.height * 0.85 - self.font16:getHeight() * 0.5,
+            self.width,
+            'center'
+        )
+    end
 
     -- レベルの横の数
     lg.setColor(1, 1, 1, 1)
@@ -134,15 +143,17 @@ function Select:draw()
         self.width * 0.5,
         'right'
     )
-    lg.setColor(1, 1, 1, 1)
-    lg.printf(
-        'LEFT/RIGHT',
-        self.font16,
-        -32,
-        self.height * 0.5 - self.font16:getHeight() * 0.5,
-        self.width * 0.5,
-        'right'
-    )
+    if state.visiblePressAnyKey and not state.busy then
+        lg.setColor(1, 1, 1, 1)
+        lg.printf(
+            'LEFT/RIGHT',
+            self.font16,
+            -32,
+            self.height * 0.5 - self.font16:getHeight() * 0.5,
+            self.width * 0.5,
+            'right'
+        )
+    end
 
     -- レベルの縦の数
     lg.setColor(1, 1, 1, 1)
@@ -154,14 +165,16 @@ function Select:draw()
         self.width,
         'left'
     )
-    lg.printf(
-        'UP/DOWN',
-        self.font16,
-        self.width * 0.5 + 32,
-        self.height * 0.5 - self.font16:getHeight() * 0.5,
-        self.width,
-        'left'
-    )
+    if state.visiblePressAnyKey and not state.busy then
+        lg.printf(
+            'UP/DOWN',
+            self.font16,
+            self.width * 0.5 + 32,
+            self.height * 0.5 - self.font16:getHeight() * 0.5,
+            self.width,
+            'left'
+        )
+    end
 
     -- レベルの縦と高さ
     lg.setColor(1, 1, 1, 1)
@@ -175,21 +188,22 @@ function Select:draw()
     )
 
     -- ベストスコア
-    do--if self.best[self:getLevelTitle()] then
-        lg.setColor(1, 1, 1, 1)
+    do
+        local best = self.best[self:getLevelTitle()] or 0
+        lg.setColor(1, 1, 1, best == 0 and 0.5 or 1)
         lg.printf(
             'BEST',
-            self.font16,
-            -16,
-            self.height * 0.6 - self.font16:getHeight() * 0.5,
+            self.font32,
+            -16 + state.offsetX,
+            self.height * 0.6 - self.font32:getHeight() * 0.5 + state.offsetY + state.offsetT,
             self.width * 0.5,
             'right'
         )
         lg.printf(
-            self.best[self:getLevelTitle()] or 0,
+            best,
             self.font32,
-            self.width * 0.5 + 16,
-            self.height * 0.6 - self.font32:getHeight() * 0.5,
+            self.width * 0.5 + 16 + state.offsetX,
+            self.height * 0.6 - self.font32:getHeight() * 0.5 + state.offsetY + state.offsetT,
             self.width,
             'left'
         )
