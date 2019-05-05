@@ -193,7 +193,14 @@ function Game:keypressed(key, scancode, isrepeat)
             { alpha = 1 },
             'in-out-cubic',
             function()
-                self.best[self.state.level.title] = self.state.level.score
+                -- ベストスコア更新
+                if self.best[self.state.level.title] == nil then
+                    self.best[self.state.level.title] = self.state.level.score
+                elseif self.state.level.score > self.best[self.state.level.title] then
+                    self.best[self.state.level.title] = self.state.level.score
+                end
+
+                -- レベル選択へ
                 self:gotoState('select', self.state.level.numHorizontal, self.state.level.numVertical, self.state.pieceTypes)
             end
         )
