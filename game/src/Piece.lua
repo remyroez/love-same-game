@@ -10,6 +10,15 @@ Piece:include(require 'Transform')
 Piece:include(require 'Rectangle')
 Piece:include(require 'SpriteRenderer')
 
+local function uuid()
+    local fn = function(x)
+        local r = love.math.random(16) - 1
+        r = (x == "x") and (r + 1) or (r % 4) + 9
+        return ("0123456789abcdef"):sub(r, r)
+    end
+    return (("xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"):gsub("[xy]", fn))
+end
+
 -- 初期化
 function Piece:initialize(args)
     args = args or {}
@@ -18,6 +27,7 @@ function Piece:initialize(args)
     self.type = args.type or 'none'
     self.color = args.color or { 1, 1, 1, 1 }
     self.checked = false
+    self.uuid = uuid()
 
     -- SpriteRenderer 初期化
     self:initializeSpriteRenderer(args.spriteSheet)
@@ -30,10 +40,15 @@ function Piece:initialize(args)
     local h = args.height or spriteHeight
 
     -- Rectangle 初期化
-    self:initializeRectangle(args.x, args.y, w, h)
+    self:initializeRectangle(args.x, args.y, spriteWidth, spriteHeight, 'center')
 
     -- Transform 初期化
     self:initializeTransform(self.x, self.y, args.rotation, w / spriteWidth, h / spriteHeight)
+
+    -- 今のスケールを保存
+    self.baseScaleX = self.scaleX
+    self.baseScaleY = self.scaleY
+    print(self.pivotX, self.pivotY)
 
     -- デバッグモード
     self.debugMode = args.debugMode or false

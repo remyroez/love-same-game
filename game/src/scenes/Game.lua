@@ -52,6 +52,7 @@ end
 function Game:draw()
     self.state.level:draw()
 
+    lg.setColor(1, 1, 1, 1)
     lg.printf(self.state.level.score, 0, 0, self.width, 'center')
 
     local size = 32
