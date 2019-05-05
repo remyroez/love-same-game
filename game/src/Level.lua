@@ -3,6 +3,7 @@ local class = require 'middleclass'
 
 -- クラス
 local Piece = require 'Piece'
+local Timer = require 'Timer'
 
 -- エイリアス
 local lg = love.graphics
@@ -51,12 +52,18 @@ function Level:initialize(spriteSheet, x, y, width, height)
     self.lastScores = {}
     self.counts = {}
 
+    -- タイマー
+    self.timer = Timer()
+    self.busy = false
+
     -- デバッグモード
     self.debugMode = false
 end
 
 -- 読み込み
 function Level:load(numHorizontal, numVertical, pieceTypes)
+    self.timer:destroy()
+
     -- 駒の数
     self.numHorizontal = math.max(numHorizontal or self.numHorizontal or 20, 1)
     self.numVertical = math.max(numVertical or self.numVertical or 10, 1)
@@ -94,6 +101,8 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
             table.insert(
                 line,
                 Piece {
+                    x = (i - 1) * self.pieceWidth,
+                    y = (self.numVertical - j) * self.pieceHeight,
                     width = self.pieceWidth,
                     height = self.pieceHeight,
                     type = pieceType.name,
@@ -111,10 +120,12 @@ end
 
 -- 破棄
 function Level:destroy()
+    self.timer:destroy()
 end
 
 -- 更新
 function Level:update(dt)
+    self.timer:update(dt)
 end
 
 -- 描画
@@ -125,8 +136,6 @@ function Level:draw()
     -- 駒の描画
     for i, line in ipairs(self.pieces) do
         for j, piece in ipairs(line) do
-            piece.x = (i - 1) * self.pieceWidth
-            piece.y = (self.numVertical - j) * self.pieceHeight
             piece:draw()
         end
     end
@@ -136,7 +145,9 @@ end
 
 -- キー入力
 function Level:keypressed(key, scancode, isrepeat)
-    if key == 'backspace' then
+    if self.busy then
+        -- 動作中
+    elseif key == 'backspace' then
         -- アンドゥ
         self:undo()
     elseif key == 'home' then
@@ -150,7 +161,9 @@ end
 
 -- マウス入力
 function Level:mousepressed(x, y, button, istouch, presses)
-    if button == 1 then
+    if self.busy then
+        -- 動作中
+    elseif button == 1 then
         -- 駒を除外
         local px = math.ceil((x - self.x) / self.pieceWidth)
         local py = self.numVertical - math.ceil((y - self.y) / self.pieceHeight) + 1
@@ -312,6 +325,7 @@ function Level:removeSamePieces(x, y, save)
         for _, coord in ipairs(coords) do
             self:removePiece(unpack(coord))
         end
+        self:tweenPiecePosition(0.5)
 
         -- スコア獲得
         self:scorePieces(#coords)
@@ -324,7 +338,7 @@ end
 -- スコア獲得
 function Level:scorePieces(num)
     table.insert(self.lastScores, self.score)
-    self.score = self.score + math.pow(num - 1, 2)
+    self.score = self.score + math.pow(num - 2, 2)
 end
 
 -- 直前の状態に戻す
@@ -336,6 +350,7 @@ function Level:undo()
     else
         self.pieces = table.remove(self.lastEnviroments)
         self.score = table.remove(self.lastScores)
+        self:tweenPiecePosition(0.5)
 
         -- 駒のタイプのカウント
         self:countPieceTypes()
@@ -353,6 +368,7 @@ function Level:undoAll()
         self.lastEnviroments = {}
         self.score = 0
         self.lastScores = {}
+        self:tweenPiecePosition(0.5)
 
         -- 駒のタイプのカウント
         self:countPieceTypes()
@@ -369,6 +385,53 @@ function Level:countPieceTypes()
         for j, piece in ipairs(line) do
             self.counts[piece.type] = self.counts[piece.type] + 1
         end
+    end
+end
+
+-- 駒の位置を移動させる
+function Level:tweenPiecePosition(delay)
+    delay = delay or 0
+
+    -- 各駒へ座標設定
+    for i, line in ipairs(self.pieces) do
+        for j, piece in ipairs(line) do
+            local x = (i - 1) * self.pieceWidth
+            local y = (self.numVertical - j) * self.pieceHeight
+            if delay == 0 then
+                -- 時間が未指定なら一瞬で戻す
+                piece.x, piece.y = x, y
+            elseif piece.x ~= x or  piece.y ~= y then
+                -- Ｘ方向
+                if piece.x ~= x then
+                    self.timer:tween(
+                        delay,
+                        piece,
+                        { x = x },
+                        'in-out-cubic'
+                    )
+                end
+                -- Ｙ方向
+                if piece.y ~= y then
+                    self.timer:tween(
+                        delay,
+                        piece,
+                        { y = y },
+                        (y > piece.y) and 'in-bounce' or 'out-back'
+                    )
+                end
+            end
+        end
+    end
+
+    -- 時間経過まで操作できないようにする
+    if delay > 0 then
+        self.busy = true
+        self.timer:after(
+            delay,
+            function ()
+                self.busy = false
+            end
+        )
     end
 end
 
