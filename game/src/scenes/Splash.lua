@@ -17,7 +17,7 @@ end
 
 -- 読み込み
 function Splash:load()
-    self.state.splash = o_ten_one{ base_folder = 'lib', background = { 0, 0, 0 } }
+    self.state.splash = o_ten_one{ base_folder = 'lib' }
     self.state.splash.onDone = function ()
         self:nextState()
     end
