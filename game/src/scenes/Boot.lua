@@ -10,7 +10,7 @@ local Boot = Scene:newState 'boot'
 
 -- 次のステートへ
 function Boot:nextState(...)
-    self:gotoState 'game'
+    self:gotoState 'splash'
 end
 
 -- 読み込み
