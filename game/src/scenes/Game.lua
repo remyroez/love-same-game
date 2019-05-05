@@ -23,12 +23,23 @@ function Game:enteredState(width, height, pieceTypes, ...)
     -- プライベート
     local state = self.state
 
+    local top = 64 + 8
+    local bottom = 32 + 8 * 2
+
     -- レベル
     state.pieceTypes = pieceTypes or {}
-    state.level = Level(self.spriteSheet, 0, 0, nil, self.height - (32 + 32 + 8 * 2))
+    state.level = Level(self.spriteSheet, 0, 0, nil, self.height - (top + bottom))
     state.level:load(width, height, state.pieceTypes)
     state.level.x = (state.level.width - state.level:totalWidth()) * 0.5
-    state.level.y = (state.level.height - state.level:totalHeight()) * 0.5 + 32
+    state.level.y = (state.level.height - state.level:totalHeight()) * 0.5 + top
+
+    -- 一番大きいカウントを取る
+    state.biggest = 0
+    for _, count in pairs(state.level.counts) do
+        if count > state.biggest then
+            state.biggest = count
+        end
+    end
 end
 
 -- ステート終了
@@ -51,21 +62,22 @@ function Game:draw()
 
     -- タイトル
     lg.setColor(1, 1, 1, 1)
-    lg.printf(self.state.level.title, 0, 0, self.width, 'left')
+    lg.printf('LEVEL', self.font16, 8, 0, self.width, 'left')
+    lg.printf(self.state.level.title, self.font32, 8, self.font16:getHeight() * 0.5, self.width, 'left')
 
     -- 得点
     lg.setColor(1, 1, 1, 1)
-    lg.printf(self.state.level.score, 0, 0, self.width, 'center')
+    lg.printf(self.state.level.score, self.font64, 0, -self.font32:getHeight() * 0.5 + 8, self.width, 'center')
 
     -- 駒の種類別の残数
     local size = 32
-    local range = 100
+    local range = size + 16 + self.font32:getWidth(self.state.biggest)
     lg.push()
-    lg.translate((self.width - (#self.state.pieceTypes - 1) * range) * 0.5 - size, self.height - size - 8)
+    lg.translate((self.width - (#self.state.pieceTypes - 0) * range) * 0.5, self.height - size - 8)
     for i, pieceType in ipairs(self.state.pieceTypes) do
         local x = (i - 1) * range
         self:drawPieceSprite(pieceType.spriteName, x, 0, size)
-        lg.printf(self.state.level.counts[pieceType.name], x + size + 8, (size - 12) * 0.5, self.width, 'left')
+        lg.printf(self.state.level.counts[pieceType.name], self.font32, x + size + 8, (size - self.font32:getHeight()) * 0.5, self.width, 'left')
     end
     lg.pop()
 end
