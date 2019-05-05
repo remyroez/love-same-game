@@ -56,9 +56,25 @@ function Game:enteredState(width, height, pieceTypes, ...)
     )
     state.busy = true
 
+    -- 開始時の演出
+    state.offsetTop = -self.height * 0.5
+    state.timer:tween(
+        1,
+        state,
+        { offsetTop = 0 },
+        'in-bounce'
+    )
+    state.offsetBottom = self.height * 0.5
+    state.timer:tween(
+        1,
+        state,
+        { offsetBottom = 0 },
+        'out-back'
+    )
+
+    -- ダイアログ周り
     state.alpha2 = 0
     state.alpha3 = 0
-
     state.dialog = false
     state.clear = false
 end
@@ -73,6 +89,32 @@ end
 function Game:update(dt)
     self.state.level:update(dt)
     self.state.timer:update(dt)
+
+    -- クリア判定
+    if self.state.busy then
+        -- 演出中
+    elseif self.state.clear then
+        -- クリア
+    elseif self.state.dialog then
+        -- ダイアログ中
+    else
+        if self.state.level:countPieces() == 0 then
+            -- クリア演出へ
+            self.state.clear = true
+            self.state.busy = true
+            self.state.level.busy = true
+            self.state.timer:tween(
+                1,
+                self.state,
+                { alpha2 = 0.5, alpha3 = 1 },
+                'in-out-cubic',
+                function()
+                    -- 操作可能
+                    self.state.busy = false
+                end
+            )
+        end
+    end
 end
 
 -- 描画
@@ -105,20 +147,26 @@ function Game:draw()
         end
     end
 
-    -- タイトル
-    lg.setColor(1, 1, 1, 1)
-    lg.printf('LEVEL', self.font16, 8, 0, self.width, 'left')
-    lg.printf(self.state.level.title, self.font32, 8, self.font16:getHeight() * 0.5, self.width, 'left')
+    -- トップバー
+    lg.push()
+    lg.translate(0, self.state.offsetTop)
+    do
+        -- タイトル
+        lg.setColor(1, 1, 1, 1)
+        lg.printf('LEVEL', self.font16, 8, 0, self.width, 'left')
+        lg.printf(self.state.level.title, self.font32, 8, self.font16:getHeight() * 0.5, self.width, 'left')
 
-    -- 得点
-    lg.setColor(1, 1, 1, 1)
-    lg.printf(self.state.level.score, self.font64, 0, -self.font32:getHeight() * 0.5 + 8, self.width, 'center')
+        -- 得点
+        lg.setColor(1, 1, 1, 1)
+        lg.printf(self.state.level.score, self.font64, 0, -self.font32:getHeight() * 0.5 + 8, self.width, 'center')
+    end
+    lg.pop()
 
     -- 駒の種類別の残数
     local size = 32
     local range = size + 16 + self.font32:getWidth(self.state.biggest)
     lg.push()
-    lg.translate((self.width - (#self.state.pieceTypes - 0) * range) * 0.5, self.height - size - 8)
+    lg.translate((self.width - (#self.state.pieceTypes - 0) * range) * 0.5, self.height - size - 8 + self.state.offsetBottom)
     for i, pieceType in ipairs(self.state.pieceTypes) do
         local x = (i - 1) * range
         self:drawPieceSprite(pieceType.spriteName, x, 0, size)
@@ -146,7 +194,7 @@ function Game:keypressed(key, scancode, isrepeat)
             'in-out-cubic',
             function()
                 self.best[self.state.level.title] = self.state.level.score
-                self:gotoState('select')
+                self:gotoState('select', self.state.level.numHorizontal, self.state.level.numVertical, self.state.pieceTypes)
             end
         )
         self.state.busy = true

@@ -29,7 +29,7 @@ function Select:load()
 end
 
 -- ステート開始
-function Select:enteredState(...)
+function Select:enteredState(width, height, pieceTypes, ...)
     -- 親
     Scene.enteredState(self, ...)
 
@@ -65,10 +65,12 @@ function Select:enteredState(...)
     state.busy = true
 
     -- レベル設定
-    state.levelTypes = {}
-    state.levelWidth = 20
-    state.levelHeight = 10
-    self:randomTypes(5)
+    state.levelWidth = width or 20
+    state.levelHeight = height or 10
+    state.levelTypes = pieceTypes or {}
+    if pieceTypes == nil then
+        self:randomTypes(5)
+    end
 end
 
 -- ステート終了

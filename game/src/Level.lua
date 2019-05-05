@@ -268,6 +268,17 @@ function Level:mousepressed(x, y, button, istouch, presses)
     end
 end
 
+-- 駒のカウント
+function Level:countPieces()
+    local count = 0
+
+    for i, line in ipairs(self.pieces) do
+        count = count + #line
+    end
+
+    return count
+end
+
 -- マウスポジションの取得
 function Level:getMousePosition()
     local x, y = love.mouse.getPosition()
