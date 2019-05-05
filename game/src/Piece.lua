@@ -48,7 +48,6 @@ function Piece:initialize(args)
     -- 今のスケールを保存
     self.baseScaleX = self.scaleX
     self.baseScaleY = self.scaleY
-    print(self.pivotX, self.pivotY)
 
     -- デバッグモード
     self.debugMode = args.debugMode or false

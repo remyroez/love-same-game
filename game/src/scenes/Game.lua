@@ -33,9 +33,10 @@ function Game:enteredState(path, ...)
     local state = self.state
 
     -- レベル
-    state.level = Level(self.spriteSheet)
+    state.level = Level(self.spriteSheet, 0, 0, nil, self.height - (32 + 32 + 8 * 2))
     state.level:load(20, 10, pieceTypes)
-    state.level.y = (self.height - state.level:totalHeight()) * 0.5
+    state.level.x = (state.level.width - state.level:totalWidth()) * 0.5
+    state.level.y = (state.level.height - state.level:totalHeight()) * 0.5 + 32
 end
 
 -- ステート終了

@@ -72,8 +72,8 @@ function Level:load(numHorizontal, numVertical, pieceTypes)
 
     -- 駒のサイズ
     do
-        local pw = math.ceil(self.width / self.numHorizontal)
-        local ph = math.ceil(self.height / self.numVertical)
+        local pw = math.floor(self.width / self.numHorizontal)
+        local ph = math.floor(self.height / self.numVertical)
         if pw < ph then
             ph = pw
         elseif ph < pw then
