@@ -29,7 +29,7 @@ function Game:enteredState(width, height, pieceTypes, ...)
 
     -- レベル
     state.pieceTypes = pieceTypes or {}
-    state.level = Level(self.spriteSheet, 0, 0, nil, self.height - (top + bottom))
+    state.level = Level(self.spriteSheet, self.sounds, 0, 0, nil, self.height - (top + bottom))
     state.level:load(width, height, state.pieceTypes)
     state.level.x = (state.level.width - state.level:totalWidth()) * 0.5
     state.level.y = (state.level.height - state.level:totalHeight()) * 0.5 + top
@@ -290,8 +290,8 @@ function Game:keypressed(key, scancode, isrepeat)
             )
 
             -- ＳＥ
-            self.sounds.start:seek(0)
-            self.sounds.start:play()
+            self.sounds.remove:seek(0)
+            self.sounds.remove:play()
         end
     else
         self.state.level:keypressed(key, scancode, isrepeat)
