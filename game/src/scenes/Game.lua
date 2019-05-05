@@ -51,8 +51,6 @@ function Game:enteredState(width, height, pieceTypes, ...)
         { alpha = 0 },
         'in-out-cubic',
         function()
-            self.musics.ingame:setVolume(0.5)
-            self.musics.ingame:play()
             state.busy = false
         end
     )
@@ -79,6 +77,10 @@ function Game:enteredState(width, height, pieceTypes, ...)
     state.alpha3 = 0
     state.dialog = false
     state.clear = false
+
+    -- ＢＧＭ
+    self.musics.ingame:setVolume(0.5)
+    self.musics.ingame:play()
 end
 
 -- ステート終了
