@@ -10,7 +10,7 @@ local Boot = Scene:newState 'boot'
 
 -- 次のステートへ
 function Boot:nextState(...)
-    self:gotoState 'splash'
+    self:gotoState 'game'
 end
 
 -- 読み込み
@@ -21,7 +21,7 @@ function Boot:load()
     self.height = height
 
     -- スプライトシートの読み込み
-    --self.spriteSheet = sbss:new('assets/spritesheet.xml')
+    self.spriteSheet = sbss:new('assets/round_nodetailsOutline.xml')
 end
 
 -- 更新

@@ -73,6 +73,11 @@ function Timer:update(dt)
                 ref[key] = ref[key] + delta*ds
             end
             if timer.time >= timer.delay then
+                -- https://github.com/adnzzzzZ/chrono/pull/6
+                for k, v in pairs(timer.target) do
+                    timer.subject[k] = v
+                end
+                -- ----------
                 timer.after()
                 self.timers[tag] = nil
             end
@@ -111,9 +116,12 @@ function Timer:every(delay, action, count, after, tag)
 end
 
 function Timer:during(delay, action, after, tag)
-    if type(after) == 'string' then tag, after = after, nil
-    elseif type(after) == 'function' then tag = UUID()
-    else tag = tag or UUID() end
+    if type(after) == 'string' then tag, after = after, nil end
+    -- https://github.com/adnzzzzZ/chrono/pull/1
+    --elseif type(after) == 'function' then tag = UUID()
+    --else tag = tag or UUID() end
+    -- ----------
+    tag = tag or UUID()
     self:cancel(tag)
     self.timers[tag] = {type = 'during', time = 0, delay = self:__getResolvedDelay(delay), action = action, after = after or function() end}
     return tag
@@ -128,11 +136,14 @@ function Timer:script(f)
 end
 
 function Timer:tween(delay, subject, target, method, after, tag, ...)
-    if type(after) == 'string' then tag, after = after, nil
-    elseif type(after) == 'function' then tag = UUID()
-    else tag = tag or UUID() end
+    if type(after) == 'string' then tag, after = after, nil end
+    -- https://github.com/adnzzzzZ/chrono/pull/1
+    --elseif type(after) == 'function' then tag = UUID()
+    --else tag = tag or UUID() end
+    -- ----------
+    tag = tag or UUID()
     self:cancel(tag)
-    self.timers[tag] = {type = 'tween', time = 0, delay = self:__getResolvedDelay(delay), subject = subject, target = target, method = method, after = after or function() end, 
+    self.timers[tag] = {type = 'tween', time = 0, delay = self:__getResolvedDelay(delay), subject = subject, target = target, method = method, after = after or function() end,
                         args = {...}, last_s = 0, payload = self:__tweenCollectPayload(subject, target, {})}
     return tag
 end
