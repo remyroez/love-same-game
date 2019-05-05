@@ -180,7 +180,7 @@ function Select:draw()
     end
     if state.visiblePressAnyKey and not state.busy then
         lg.printf(
-            '3/4/5',
+            '3/4/5/6/7/8',
             self.font16,
             0,
             self.height * 0.85 - self.font16:getHeight() * 0.5,
@@ -285,6 +285,15 @@ function Select:keypressed(key, scancode, isrepeat)
         self:playCursor()
     elseif key == '5' then
         self:randomTypes(5)
+        self:playCursor()
+    elseif key == '6' then
+        self:randomTypes(6)
+        self:playCursor()
+    elseif key == '7' then
+        self:randomTypes(7)
+        self:playCursor()
+    elseif key == '8' then
+        self:randomTypes(8)
         self:playCursor()
     elseif key == 'left' then
         -- レベルの幅

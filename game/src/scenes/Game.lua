@@ -203,14 +203,21 @@ function Game:draw()
     lg.pop()
 
     -- 駒の種類別の残数
+    local font = self.font32
     local size = 32
-    local range = size + 16 + self.font32:getWidth(self.state.biggest)
+    local range = size + 16 + font:getWidth(self.state.biggest)
+    local x = (self.width - (#self.state.pieceTypes - 0) * range) * 0.5
+    if x < 0 then
+        font = self.font16
+        range = size + 16 + font:getWidth(self.state.biggest)
+        x = (self.width - (#self.state.pieceTypes - 0) * range) * 0.5
+    end
     lg.push()
-    lg.translate((self.width - (#self.state.pieceTypes - 0) * range) * 0.5, self.height - size - 8 + self.state.offsetBottom)
+    lg.translate(x, self.height - size - 8 + self.state.offsetBottom)
     for i, pieceType in ipairs(self.state.pieceTypes) do
         local x = (i - 1) * range
         self:drawPieceSprite(pieceType.spriteName, x, 0, size)
-        lg.printf(self.state.level.counts[pieceType.name], self.font32, x + size + 8, (size - self.font32:getHeight()) * 0.5, self.width, 'left')
+        lg.printf(self.state.level.counts[pieceType.name], font, x + size + 8, (size - font:getHeight()) * 0.5, self.width, 'left')
     end
     lg.pop()
 
